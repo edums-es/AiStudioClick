@@ -1,0 +1,124 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 4: Swiss & High-Contrast (Dark Mode Variant)",
+  "emotional_tone": "Premium, Objective, Sophisticated, Cutting-edge, Authoritative",
+  "color_palette": {
+    "background_base": "#09090B",
+    "background_surface": "#18181B",
+    "background_elevated": "#27272A",
+    "border_default": "#27272A",
+    "border_hover": "#3F3F46",
+    "text_primary": "#FAFAFA",
+    "text_secondary": "#A1A1AA",
+    "text_tertiary": "#71717A",
+    "accent_primary": "#FFFFFF",
+    "accent_primary_hover": "#E4E4E7",
+    "accent_subtle": "#27272A",
+    "error": "#EF4444",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "info": "#3B82F6"
+  },
+  "typography": {
+    "font_strategy": "The 'Swiss Brutalist' adapted for B2B Tech",
+    "headings": {
+      "family": "Cabinet Grotesk, sans-serif",
+      "weights": ["300", "700"],
+      "tracking": "tracking-tight",
+      "install_url": "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,400,300&display=swap"
+    },
+    "body": {
+      "family": "IBM Plex Sans, sans-serif",
+      "weights": ["400", "500", "600"],
+      "install_url": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400"],
+      "usage": "Execution Logs, Code Snippets, Node IDs",
+      "install_url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-bold tracking-tighter text-zinc-50",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight text-zinc-50",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100",
+      "body": "text-sm sm:text-base font-normal text-zinc-400 leading-relaxed",
+      "label": "text-xs font-semibold tracking-[0.2em] uppercase text-zinc-500"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing + Control Room Grid",
+    "padding_scale": "p-4, p-6, p-8 for cards; p-12, p-20 for sections",
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "builder_layout": "Full bleed 100vh canvas. Floating Glassmorphism toolbars (z-50) overlapping the grid.",
+    "alignment": "Strict left-alignment for all data and forms. Center only for hero text or empty states."
+  },
+  "surface_strategies": {
+    "dashboard_cards": "Flat background (bg-zinc-900), 1px subtle border (border-zinc-800), no drop shadow. Crisp, technical look.",
+    "floating_nav_and_toolbars": "Crystal Glassmorphism: bg-zinc-950/60, backdrop-blur-xl, border-b or border border-white/10.",
+    "builder_nodes": "Neumorphic/Technical mix: bg-zinc-900, 1px solid border-zinc-700, sharp corners (rounded-md), very subtle shadow-lg. Highlight active node with border-white and shadow-[0_0_15px_rgba(255,255,255,0.1)].",
+    "execution_logs": "Terminal Look: bg-black, border border-zinc-800, text-zinc-300 font-mono text-xs."
+  },
+  "components": {
+    "buttons": "Primary: bg-white text-black hover:bg-zinc-200 rounded-md font-medium. Secondary: bg-transparent border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-600.",
+    "inputs_and_forms": "Shadcn defaults customized to dark theme. bg-zinc-950, border-zinc-800, focus:ring-1 focus:ring-white focus:border-white.",
+    "react_flow": "Use dark theme for React Flow canvas. Background dots/lines in zinc-800. Edges in zinc-500, animated (stroke-dasharray) when active.",
+    "modals_and_dialogs": "Glass overlay (bg-black/80 backdrop-blur-sm). Dialog box solid bg-zinc-950 border border-zinc-800."
+  },
+  "media_urls": {
+    "auth_background": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6cb7685-ce5d-448a-9a88-5ef7dab79f79/images/e93c846b1a2a8fe86e55a9b5a19ab6d1534cf03b7ccaa98ea9fc24a06679fe8f.png",
+      "description": "Dark premium abstract background 3D geometric glass floating shapes for the Login/Register page"
+    },
+    "builder_empty_state": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6cb7685-ce5d-448a-9a88-5ef7dab79f79/images/91d3704d6f21b697ff7d5724a19e3bf80dd771771785c922f41f6b92ac48ee55.png",
+      "description": "Abstract high-end 3D render of a node-based visual programming interface for empty states or placeholder marketing hero"
+    },
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjJ8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHByb2Zlc3Npb25hbCUyMHBvcnRyYWl0fGVufDB8fHx8MTc3NTU4NjcwOHww&ixlib=rb-4.1.0&q=85",
+        "description": "Business professional portrait for user profile placeholder"
+      },
+      {
+        "url": "https://images.pexels.com/photos/31880922/pexels-photo-31880922.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Secondary business professional avatar"
+      }
+    ],
+    "integration_logos": [
+      {
+        "url": "https://images.unsplash.com/photo-1654277041218-84424c78f0ae?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDN8MHwxfHNlYXJjaHwyfHxjb21wYW55JTIwbG9nbyUyMG1pbmltYWxpc3QlMjB3aGl0ZXxlbnwwfHx8fDE3NzU1ODY3MDh8MA&ixlib=rb-4.1.0&q=85",
+        "description": "GitHub integration placeholder"
+      },
+      {
+        "url": "https://images.pexels.com/photos/7004907/pexels-photo-7004907.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Apple/Mac related integration placeholder"
+      }
+    ]
+  },
+  "motion_and_interactions": {
+    "hover_states": "All interactive elements MUST change background or border color and text color on hover. Use transition-colors duration-200.",
+    "focus_states": "High contrast focus rings. focus:outline-none focus:ring-2 focus:ring-zinc-100 focus:ring-offset-2 focus:ring-offset-zinc-950.",
+    "page_transitions": "Subtle fade-in for dashboard views (opacity 0 to 1).",
+    "node_connections": "React flow edges should have a subtle animated pulse (stroke-dasharray animation) to simulate data flowing when a workflow is active."
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure all text against zinc-950 or zinc-900 background passes WCAG AA (minimum 4.5:1).",
+    "test_ids": "All buttons, inputs, canvas nodes, and links MUST have data-testid attributes (e.g., data-testid='login-submit-button', data-testid='add-node-button').",
+    "aria": "Use aria-labels for icon-only buttons in the builder toolbar."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Technical, consistent 1.5px stroke width. Use Phosphor Icons if heavier weights are needed, but stick to Lucide by default."
+  },
+  "instructions_to_main_agent": [
+    "Ensure Tailwind config is properly set up with custom zinc and white palette colors.",
+    "Add Cabinet Grotesk, IBM Plex Sans, and JetBrains Mono from the provided install URLs to index.css or the HTML head.",
+    "Use Shadcn/ui components extensively but override default 'Vercel' look to match the dark premium B2B style described in surface_strategies.",
+    "Implement the React Flow canvas as the core feature. Floating toolbars must use the Crystal Glassmorphism style (bg-zinc-950/60 backdrop-blur-xl).",
+    "Do not use generic blue/purple AI gradients. Stick to the stark, objective, monochromatic palette (zinc grays + stark white).",
+    "Integrate the auth_background image specifically on the right or left split-screen of the Login/Register page.",
+    "For the 'Mind Map/Funnel Board', use a simplified read-only mode of React Flow or a structured flex layout matching the visual builder's node styling.",
+    "Execution Logs should resemble a terminal: dark background, monospace font, green/red success/error subtle highlights.",
+    "Do not use ANY placeholder URLs (like placehold.it). Use the URLs provided in media_urls."
+  ]
+}
