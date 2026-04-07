@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Plug, Plus, CheckCircle, XCircle, Clock, RefreshCw, X, Workflow } from "lucide-react";
+import { toast } from "sonner";
 
 const STATUS_MAP = {
   connected: { icon: CheckCircle, label: "Conectado", cls: "text-emerald-400" },
@@ -29,8 +30,14 @@ export default function Integrations() {
     setTesting((t) => ({ ...t, [id]: true }));
     try {
       const { data } = await api.post(`/integrations/${id}/test`);
-      setIntegrations((prev) => prev.map((i) => i.id === id ? { ...i, status: data.status } : i));
+      setIntegrations((prev) => prev.map((i) => i.id === id ? { ...i, status: data.status, last_tested: new Date().toISOString() } : i));
+      if (data.success) {
+        toast.success(data.message || "Conexão estabelecida com sucesso!");
+      } else {
+        toast.error("Falha ao conectar. Verifique as credenciais.");
+      }
     } catch (err) {
+      toast.error("Erro ao testar a conexão.");
       console.error(err);
     } finally {
       setTesting((t) => ({ ...t, [id]: false }));

@@ -53,8 +53,25 @@ export default function MindMap() {
   const [saving, setSaving] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
 
+  // Load first map or show blank canvas on mount
   useEffect(() => {
-    api.get("/mindmap").then(({ data }) => setMaps(data)).catch(console.error);
+    api.get("/mindmap").then(({ data }) => {
+      setMaps(data);
+      if (data.length > 0) {
+        loadMap(data[0]);
+      } else {
+        // Default starter node
+        setNodes([
+          { id: "idea-1", type: "idea", position: { x: 400, y: 200 }, data: { label: "Minha Ideia Principal" } },
+          { id: "stage-1", type: "stage", position: { x: 650, y: 150 }, data: { label: "Etapa 1" } },
+          { id: "pain-1", type: "pain", position: { x: 650, y: 280 }, data: { label: "Dor do cliente" } },
+        ]);
+        setEdges([
+          { id: "e1", source: "idea-1", target: "stage-1", type: "smoothstep" },
+          { id: "e2", source: "idea-1", target: "pain-1", type: "smoothstep" },
+        ]);
+      }
+    }).catch(console.error);
   }, []);
 
   const loadMap = (map) => {

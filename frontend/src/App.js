@@ -2,6 +2,7 @@ import "@/App.css";
 import "@/index.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { Toaster } from "sonner";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import AppLayout from "@/components/layout/AppLayout";
@@ -37,6 +38,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Toaster theme="dark" position="top-right" richColors />
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
