@@ -100,7 +100,7 @@ export default function Settings() {
               ["Backend", "FastAPI + Motor (MongoDB)"],
               ["Auth", "JWT (httpOnly cookies + Bearer)"],
               ["Builder", "React Flow (@xyflow/react)"],
-              ["LLM Provider", "Mock (plugável — OpenAI/Claude/Gemini)"],
+              ["LLM Provider", "emergentintegrations — OpenAI gpt-4o (real)"],
               ["Click Massa", "Mock Connector (service layer pronto)"],
               ["External Connectors", "REST, Webhook, Voice (stubs prontos)"],
               ["MCP Future", "Interfaces abstratas preparadas"],
