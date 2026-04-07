@@ -9,6 +9,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import AgentsList from "@/pages/agents/AgentsList";
 import AgentBuilder from "@/pages/agents/AgentBuilder";
+import AgentRun from "@/pages/agents/AgentRun";
 import Templates from "@/pages/templates/Templates";
 import Skills from "@/pages/skills/Skills";
 import Integrations from "@/pages/integrations/Integrations";
@@ -51,6 +52,7 @@ function App() {
             <Route path="agents" element={<AgentsList />} />
             <Route path="agents/new" element={<AgentBuilder />} />
             <Route path="agents/:id/edit" element={<AgentBuilder />} />
+            <Route path="agents/:id/run" element={<AgentRun />} />
             <Route path="templates" element={<Templates />} />
             <Route path="skills" element={<Skills />} />
             <Route path="integrations" element={<Integrations />} />

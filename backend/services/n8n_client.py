@@ -33,11 +33,11 @@ class N8nClientError(Exception):
 
 
 class N8nClient:
-    """Async client for n8n REST API."""
+    """Async client for n8n REST API. Accepts tenant-level overrides for credentials."""
 
-    def __init__(self):
-        self.base_url = os.environ.get("N8N_API_URL", "").rstrip("/")
-        self.api_key = os.environ.get("N8N_API_KEY", "")
+    def __init__(self, base_url: str = "", api_key: str = ""):
+        self.base_url = (base_url or os.environ.get("N8N_API_URL", "")).rstrip("/")
+        self.api_key = api_key or os.environ.get("N8N_API_KEY", "")
 
     @property
     def is_configured(self) -> bool:

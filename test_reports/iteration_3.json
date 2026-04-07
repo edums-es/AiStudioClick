@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 3 testing: Workspace n8n-config API, WebSocket execution engine, LLM real integration, AgentRun page, Settings page n8n form, AgentsList 'Executar ao Vivo' navigation. All 11 backend tests pass (100%). All frontend features working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Stack & Arquitetura section in Settings",
+        "issues": ["LLM Provider still shows 'Mock (plugável — OpenAI/Claude/Gemini)' in the stack info card, but it's actually real (emergentintegrations). Minor display inconsistency, not functional."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_workspace_execution.py",
+    "/app/test_reports/pytest/iteration3_results.xml"
+  ],
+  "action_items": [
+    "Minor: Update 'LLM Provider' label in Settings Stack section from 'Mock' to 'emergentintegrations (OpenAI gpt-4o)' to reflect real integration"
+  ],
+  "critical_code_review_comments": [
+    "Settings: page.fill() on type='url' input doesn't trigger React onChange — use page.type() in tests. This is a Playwright-React interaction quirk, not a code bug.",
+    "AgentRun: LLM execution (4511ms) is real — EMERGENT_LLM_KEY is working with gpt-4o via emergentintegrations",
+    "WebSocket: Full message sequence confirmed: exec_id → execution_start → node_start → node_done → execution_done",
+    "Condition node correctly routes branches (5/6 nodes executed, 1 filtered by condition)",
+    "ClickMassa provider is correctly MOCKED (returns mock status 'sent')"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_workspace_execution.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11)",
+    "frontend": "100% — all features verified"
+  },
+  "test_credentials": "admin@clickmassa.com / admin123",
+  "seed_data_creation": "Backend tests saved n8n-config (test-n8n.example.com / test-key), then cleared it. UI test saved n8n-test.example.com / test-api-key-abcde (config persists).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new iteration 3 features tested and working: (1) GET/PUT /api/workspace/n8n-config persists per-tenant, masks api_key, returns configured boolean; (2) WebSocket wss://.../api/workspace/ws/run/{id}?token=...&input_text=... delivers full event stream; (3) LLM is REAL via EMERGENT_LLM_KEY — gpt-4o responses confirmed, NOT simulated; (4) AgentRun page at /agents/{id}/run shows React Flow canvas with status glows, right panel with input/timeline/final-output; (5) Settings page n8n form saves and badge updates to 'Configurado'; (6) AgentsList 'Executar ao Vivo' button navigates to /agents/{id}/run. ClickMassa and n8n deploy remain MOCKED.",
+  "mocked_apis": ["ClickMassa (MockClickMassaProvider)", "n8n deploy (not_configured — no real n8n instance)"]
+}

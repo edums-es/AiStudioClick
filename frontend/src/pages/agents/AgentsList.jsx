@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "@/lib/api";
-import { Bot, Plus, Edit2, Trash2, Play, MoreVertical } from "lucide-react";
+import { Bot, Plus, Edit2, Trash2, Play, Zap } from "lucide-react";
 
 const STATUS_MAP = {
   active: { label: "Ativo", cls: "text-emerald-400 bg-emerald-950/40 border-emerald-800/50" },
@@ -12,6 +12,7 @@ const STATUS_MAP = {
 export default function AgentsList() {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/agents")
@@ -24,11 +25,6 @@ export default function AgentsList() {
     if (!window.confirm("Excluir este agente?")) return;
     await api.delete(`/agents/${id}`);
     setAgents((prev) => prev.filter((a) => a.id !== id));
-  };
-
-  const runAgent = async (id) => {
-    await api.post(`/executions/agent/${id}/run`, { input_data: {} });
-    alert("Agente executado com sucesso!");
   };
 
   return (
@@ -96,11 +92,11 @@ export default function AgentsList() {
                     <Edit2 className="w-3 h-3" /> Editar
                   </Link>
                   <button
-                    onClick={() => runAgent(agent.id)}
+                    onClick={() => navigate(`/agents/${agent.id}/run`)}
                     data-testid={`run-agent-${agent.id}`}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 border border-emerald-800/50 rounded hover:bg-emerald-950/30 transition-colors"
                   >
-                    <Play className="w-3 h-3" /> Executar
+                    <Zap className="w-3 h-3" /> Executar ao Vivo
                   </button>
                   <button
                     onClick={() => deleteAgent(agent.id)}

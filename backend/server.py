@@ -7,7 +7,7 @@ import os
 import logging
 
 from core.database import init_db, close_db
-from routers import auth, agents, templates, skills, integrations, executions, mindmap, dashboard, n8n as n8n_router
+from routers import auth, agents, templates, skills, integrations, executions, mindmap, dashboard, n8n as n8n_router, workspace
 from seeds.seed import run_seed
 
 app = FastAPI(title="AI Studio Click Massa", version="1.0.0")
@@ -31,6 +31,7 @@ api_router.include_router(executions.router, prefix="/executions", tags=["execut
 api_router.include_router(mindmap.router, prefix="/mindmap", tags=["mindmap"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(n8n_router.router, prefix="/n8n", tags=["n8n"])
+api_router.include_router(workspace.router, prefix="/workspace", tags=["workspace"])
 
 app.include_router(api_router)
 

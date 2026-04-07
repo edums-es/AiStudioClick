@@ -150,14 +150,20 @@ async def deploy_workflow(data: DeployRequest, user: dict = Depends(get_current_
         {"blueprint_id": data.blueprint_id, "tenant_id": user["tenant_id"]}
     )
 
-    client = N8nClient()
+    # Load tenant n8n config (overrides env vars)
+    tenant = await db.tenants.find_one({"_id": ObjectId(user["tenant_id"])})
+    tenant_n8n = (tenant or {}).get("n8n_config", {})
+    client = N8nClient(
+        base_url=tenant_n8n.get("api_url", ""),
+        api_key=tenant_n8n.get("api_key", ""),
+    )
 
     if not client.is_configured:
         # Save blueprint but mark as pending (n8n not configured)
         result = {
             "success": False,
             "status": "not_configured",
-            "message": "n8n não está configurado. Configure N8N_API_URL e N8N_API_KEY no .env para fazer o deploy.",
+            "message": "n8n não está configurado. Acesse Configurações → Integração n8n para configurar.",
             "n8n_workflow_preview": n8n_workflow,
             "blueprint_id": data.blueprint_id,
         }
