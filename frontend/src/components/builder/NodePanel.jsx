@@ -311,7 +311,7 @@ export default function NodePanel({ node, onUpdate, onClose }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
         <div>
           <p className="text-sm font-semibold text-white">{data?.label || node.type}</p>
-          <p className="text-xs text-zinc-500 capitalize">{node.type.replace(/_/g, " ")}</p>
+          <p className="text-xs text-zinc-500 capitalize">{node.type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
         </div>
         <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors" data-testid="node-panel-close">
           <X className="w-4 h-4" />
