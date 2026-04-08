@@ -1,15 +1,17 @@
 """
-Workspace Router — configurações por tenant (n8n config) + WebSocket de execução ao vivo.
+Workspace Router — configurações por tenant + WebSocket de execução ao vivo.
 
 Endpoints:
-  GET  /api/workspace/n8n-config          → retorna config n8n do tenant
-  PUT  /api/workspace/n8n-config          → atualiza config n8n do tenant
-  WS   /api/workspace/ws/run/{agent_id}   → executa agente ao vivo via WebSocket
+  GET  /api/workspace/n8n-config    → config do motor de execução por tenant
+  PUT  /api/workspace/n8n-config    → atualiza config do motor por tenant
+  GET  /api/workspace/ws-token      → gera token de curta duração para WebSocket
+  WS   /api/workspace/ws/run/{id}   → executa agente ao vivo via WebSocket
 """
 
 import logging
+import secrets
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import jwt
 from bson import ObjectId
@@ -24,22 +26,25 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 engine = ExecutionEngine()
 
+# In-memory store for short-lived WS tokens (one-use, 60s TTL)
+# Em produção substituir por Redis
+_ws_tokens: dict = {}
+
 
 # ─────────────────────────────────────────────
-# N8N Config (per-tenant)
+# Motor de Execução (n8n config per-tenant)
 # ─────────────────────────────────────────────
 
-class N8nConfigUpdate(BaseModel):
+class EngineConfigUpdate(BaseModel):
     api_url: str = ""
     api_key: str = ""
 
 
 @router.get("/n8n-config")
-async def get_n8n_config(user: dict = Depends(get_current_user)):
+async def get_engine_config(user: dict = Depends(get_current_user)):
     db = get_db()
     tenant = await db.tenants.find_one({"_id": ObjectId(user["tenant_id"])})
     config = (tenant or {}).get("n8n_config", {"api_url": "", "api_key": ""})
-    # Mask api_key for display
     masked = config.get("api_key", "")
     if masked and len(masked) > 8:
         masked = masked[:4] + "•" * (len(masked) - 8) + masked[-4:]
@@ -51,7 +56,7 @@ async def get_n8n_config(user: dict = Depends(get_current_user)):
 
 
 @router.put("/n8n-config")
-async def update_n8n_config(data: N8nConfigUpdate, user: dict = Depends(get_current_user)):
+async def update_engine_config(data: EngineConfigUpdate, user: dict = Depends(get_current_user)):
     db = get_db()
     await db.tenants.update_one(
         {"_id": ObjectId(user["tenant_id"])},
@@ -63,20 +68,36 @@ async def update_n8n_config(data: N8nConfigUpdate, user: dict = Depends(get_curr
             }
         }},
     )
-    return {"success": True, "message": "Configuração n8n salva com sucesso!"}
+    return {"success": True, "message": "Configuração salva com sucesso!"}
+
+
+# ─────────────────────────────────────────────
+# WS Token — curta duração para WebSocket
+# ─────────────────────────────────────────────
+
+@router.get("/ws-token")
+async def get_ws_token(user: dict = Depends(get_current_user)):
+    """Gera token de 60s para autenticar conexão WebSocket."""
+    token = secrets.token_urlsafe(32)
+    _ws_tokens[token] = {
+        "user_id": user["id"],
+        "tenant_id": user["tenant_id"],
+        "expires": datetime.now(timezone.utc) + timedelta(seconds=60),
+    }
+    return {"ws_token": token, "expires_in": 60}
 
 
 # ─────────────────────────────────────────────
 # WebSocket — Live Execution
 # ─────────────────────────────────────────────
 
-def _decode_ws_token(token: str) -> Optional[dict]:
-    """Decode JWT for WebSocket (no Request object available)."""
+def _decode_jwt_token(token: str) -> Optional[dict]:
+    """Decode JWT for WebSocket authentication."""
     try:
         payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
         if payload.get("type") != "access":
             return None
-        return payload
+        return {"user_id": payload.get("sub"), "tenant_id": payload.get("tenant_id")}
     except Exception:
         return None
 
@@ -85,28 +106,35 @@ def _decode_ws_token(token: str) -> Optional[dict]:
 async def run_agent_websocket(
     websocket: WebSocket,
     agent_id: str,
-    token: str = Query(...),
+    token: Optional[str] = Query(default=None),
     input_text: str = Query(default=""),
 ):
     await websocket.accept()
 
-    # Authenticate via token
-    # Authenticate via token
-    payload = _decode_ws_token(raw_token)
-    if not payload:
-        await websocket.send_json({"type": "error", "error": "Token inválido ou expirado"})
+    user_data = None
+
+    # 1. Try short-lived ws_token first (one-use, 60s TTL)
+    if token and token in _ws_tokens:
+        ws_entry = _ws_tokens.pop(token)
+        if datetime.now(timezone.utc) < ws_entry["expires"]:
+            user_data = {"user_id": ws_entry["user_id"], "tenant_id": ws_entry["tenant_id"]}
+
+    # 2. Fallback: JWT (for backward compat / testing)
+    if not user_data and token:
+        user_data = _decode_jwt_token(token)
+
+    if not user_data:
+        await websocket.send_json({"type": "error", "error": "Token inválido ou expirado. Faça login novamente."})
         await websocket.close(code=4001)
         return
 
-    tenant_id = payload.get("tenant_id")
-    user_id = payload.get("sub")
+    tenant_id = user_data["tenant_id"]
+    user_id = user_data["user_id"]
     db = get_db()
 
     # Load agent
     try:
-        agent = await db.agents.find_one(
-            {"_id": ObjectId(agent_id), "tenant_id": tenant_id}
-        )
+        agent = await db.agents.find_one({"_id": ObjectId(agent_id), "tenant_id": tenant_id})
     except Exception:
         agent = None
 
@@ -120,13 +148,16 @@ async def run_agent_websocket(
     edges = flow.get("edges", [])
 
     if not nodes:
-        await websocket.send_json({"type": "error", "error": "Este agente não possui nós no fluxo. Adicione nós no Builder primeiro."})
+        await websocket.send_json({
+            "type": "error",
+            "error": "Este agente não possui nós no fluxo. Adicione nós no Builder primeiro.",
+        })
         await websocket.close(code=4005)
         return
 
     # Create execution log
     now = datetime.now(timezone.utc).isoformat()
-    exec_doc = {
+    exec_result = await db.execution_logs.insert_one({
         "agent_id": agent_id,
         "tenant_id": tenant_id,
         "triggered_by": user_id,
@@ -138,10 +169,8 @@ async def run_agent_websocket(
         "completed_at": None,
         "duration_ms": None,
         "source": "live_run",
-    }
-    exec_result = await db.execution_logs.insert_one(exec_doc)
+    })
     exec_id = str(exec_result.inserted_id)
-
     await websocket.send_json({"type": "exec_id", "exec_id": exec_id})
 
     import time
@@ -149,17 +178,11 @@ async def run_agent_websocket(
 
     try:
         result = await engine.run_flow(
-            nodes=nodes,
-            edges=edges,
-            input_text=input_text,
-            websocket=websocket,
-            session_id=exec_id,
+            nodes=nodes, edges=edges,
+            input_text=input_text, websocket=websocket, session_id=exec_id,
         )
-
         duration_ms = int((time.time() - t_start) * 1000)
         output = result.get("output", "")
-
-        # Update execution log
         await db.execution_logs.update_one(
             {"_id": ObjectId(exec_id)},
             {"$set": {

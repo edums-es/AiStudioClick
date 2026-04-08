@@ -17,31 +17,32 @@ import {
   Save, Plus, ChevronLeft, Trash2, Zap, MessageSquare,
   GitBranch, Clock, Globe, Workflow, Cpu, Flag, Rocket,
   Calendar, Bot, Code, Database, Webhook, CheckCircle, AlertCircle,
-  ExternalLink, RefreshCw
+  ExternalLink, RefreshCw, Phone
 } from "lucide-react";
 
 const NODE_PALETTE = [
-  { type: "trigger",          label: "Gatilho / Início",   icon: Webhook,   n8n: "webhook" },
-  { type: "schedule_trigger", label: "Agendamento",         icon: Calendar,  n8n: "scheduleTrigger" },
-  { type: "ai_agent",         label: "Agente IA",           icon: Bot,       n8n: "openAi" },
-  { type: "prompt",           label: "Agente LLM",          icon: MessageSquare, n8n: "langchain.agent" },
-  { type: "condition",        label: "Se / Então",          icon: GitBranch, n8n: "if" },
-  { type: "delay",            label: "Aguardar",            icon: Clock,     n8n: "wait" },
-  { type: "http_request",     label: "Requisição Externa",  icon: Globe,     n8n: "httpRequest" },
-  { type: "clickmassa",       label: "Click Massa",         icon: Workflow,  n8n: "httpRequest" },
-  { type: "skill_executor",   label: "Habilidade IA",       icon: Cpu,       n8n: "langchain.agent" },
-  { type: "code",             label: "Código",              icon: Code,      n8n: "code" },
-  { type: "set_variables",    label: "Transformar Dados",   icon: Database,  n8n: "set" },
-  { type: "output",           label: "Finalizar",           icon: Flag,      n8n: "set" },
+  { type: "trigger",          label: "Gatilho / Início",   icon: Webhook,   _internal_type: "webhook" },
+  { type: "schedule_trigger", label: "Agendamento",         icon: Calendar,  _internal_type: "scheduleTrigger" },
+  { type: "ai_agent",         label: "Agente IA",           icon: Bot,       _internal_type: "openAi" },
+  { type: "prompt",           label: "Agente LLM",          icon: MessageSquare, _internal_type: "langchain.agent" },
+  { type: "condition",        label: "Se / Então",          icon: GitBranch, _internal_type: "if" },
+  { type: "delay",            label: "Aguardar",            icon: Clock,     _internal_type: "wait" },
+  { type: "http_request",     label: "Requisição Externa",  icon: Globe,     _internal_type: "httpRequest" },
+  { type: "clickmassa",       label: "Click Massa",         icon: Workflow,  _internal_type: "httpRequest" },
+  { type: "voice_call",       label: "Chamada de Voz",      icon: Phone,     _internal_type: "httpRequest" },
+  { type: "skill_executor",   label: "Habilidade IA",       icon: Cpu,       _internal_type: "langchain.agent" },
+  { type: "code",             label: "Código",              icon: Code,      _internal_type: "code" },
+  { type: "set_variables",    label: "Transformar Dados",   icon: Database,  _internal_type: "set" },
+  { type: "output",           label: "Finalizar",           icon: Flag,      _internal_type: "set" },
 ];
 
 const DEPLOY_STATUS = {
-  not_deployed:   { label: "Não deployado",       cls: "text-zinc-500 border-zinc-700",         icon: null },
-  pending:        { label: "Pendente (n8n offline)", cls: "text-yellow-500 border-yellow-800/50", icon: AlertCircle },
-  deployed:       { label: "Deployado",           cls: "text-blue-400 border-blue-800/50",      icon: CheckCircle },
-  active:         { label: "Ativo no n8n",        cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
-  error:          { label: "Erro no deploy",      cls: "text-red-400 border-red-800/50",        icon: AlertCircle },
-  not_configured: { label: "n8n não configurado", cls: "text-zinc-500 border-zinc-700",         icon: AlertCircle },
+  not_deployed:   { label: "Não publicado",                      cls: "text-zinc-500 border-zinc-700",         icon: null },
+  pending:        { label: "Pendente — aguardando configuração",  cls: "text-yellow-500 border-yellow-800/50",  icon: AlertCircle },
+  deployed:       { label: "Publicado",                          cls: "text-blue-400 border-blue-800/50",      icon: CheckCircle },
+  active:         { label: "Ativo",                              cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
+  error:          { label: "Erro ao publicar",                   cls: "text-red-400 border-red-800/50",        icon: AlertCircle },
+  not_configured: { label: "Motor de execução não configurado",  cls: "text-zinc-500 border-zinc-700",         icon: AlertCircle },
 };
 
 export default function AgentBuilder() {
@@ -267,7 +268,7 @@ export default function AgentBuilder() {
           <button onClick={() => handleDeploy(false)} disabled={deploying} data-testid="deploy-n8n-button"
             className="flex items-center gap-2 px-4 py-1.5 bg-white text-zinc-950 rounded-md text-sm font-semibold hover:bg-zinc-100 transition-colors disabled:opacity-50">
             {deploying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
-            {deploying ? "Enviando..." : "Deploy n8n"}
+            {deploying ? "Publicando..." : "Publicar Agente"}
           </button>
         </div>
       </div>
@@ -282,14 +283,14 @@ export default function AgentBuilder() {
             </div>
             {deployData?.n8n_workflow_id && (
               <div>
-                <p className="text-xs text-zinc-500">Workflow ID</p>
+                <p className="text-xs text-zinc-500">ID do Fluxo</p>
                 <p className="text-xs font-mono text-zinc-300">{deployData.n8n_workflow_id}</p>
               </div>
             )}
             {deployData?.n8n_url && (
               <a href={deployData.n8n_url} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
-                <ExternalLink className="w-3 h-3" /> Abrir no n8n
+                <ExternalLink className="w-3 h-3" /> Ver Fluxo Ativo
               </a>
             )}
           </div>
@@ -297,7 +298,7 @@ export default function AgentBuilder() {
             <button onClick={() => handleDeploy(true)} disabled={deploying || !blueprintId}
               data-testid="deploy-activate-btn"
               className="px-3 py-1.5 text-xs text-emerald-400 border border-emerald-800/50 rounded hover:bg-emerald-950/30 transition-colors disabled:opacity-40">
-              Deploy + Ativar
+              Publicar e Ativar
             </button>
           </div>
         </div>

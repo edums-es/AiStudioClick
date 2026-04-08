@@ -1,7 +1,7 @@
-import { Handle, Position, NodeToolbar } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import {
   Play, Zap, MessageSquare, GitBranch, Clock, Globe, Workflow,
-  Cpu, Flag, Calendar, Bot, Code, Database, Webhook
+  Cpu, Flag, Calendar, Bot, Code, Database, Webhook, Phone
 } from "lucide-react";
 
 const NodeBase = ({ children, selected, colorClass = "border-zinc-700" }) => (
@@ -12,17 +12,13 @@ const NodeBase = ({ children, selected, colorClass = "border-zinc-700" }) => (
   </div>
 );
 
-const NodeHeader = ({ icon: Icon, label, n8nType, iconColor = "text-zinc-400", bgColor = "bg-zinc-800" }) => (
+// n8nType prop removed — tradução para n8n é responsabilidade do backend (n8n_translator.py)
+const NodeHeader = ({ icon: Icon, label, iconColor = "text-zinc-400", bgColor = "bg-zinc-800" }) => (
   <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-800">
     <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${bgColor}`}>
       <Icon className={`w-3 h-3 ${iconColor}`} />
     </div>
-    <div className="min-w-0 flex-1">
-      <p className="text-xs font-semibold text-zinc-200 truncate">{label}</p>
-      {n8nType && (
-        <p className="text-[9px] text-zinc-600 font-mono truncate">{n8nType.split(".").pop()}</p>
-      )}
-    </div>
+    <p className="text-xs font-semibold text-zinc-200 truncate flex-1">{label}</p>
   </div>
 );
 
@@ -34,7 +30,7 @@ const NodeBody = ({ children }) => (
 export function StartNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-emerald-800/60">
-      <NodeHeader icon={Play} label={data.label || "Início"} n8nType="n8n-nodes-base.start"
+      <NodeHeader icon={Play} label={data.label || "Início"}
         iconColor="text-emerald-400" bgColor="bg-emerald-950/60" />
       {data.description && <NodeBody>{data.description}</NodeBody>}
       <Handle type="source" position={Position.Right} className="!bg-emerald-700 !border-emerald-600" />
@@ -46,7 +42,7 @@ export function StartNode({ data, selected }) {
 export function TriggerNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-blue-800/60">
-      <NodeHeader icon={Webhook} label={data.label || "Webhook Trigger"} n8nType="n8n-nodes-base.webhook"
+      <NodeHeader icon={Webhook} label={data.label || "Gatilho / Início"}
         iconColor="text-blue-400" bgColor="bg-blue-950/60" />
       {data.trigger_type && <NodeBody>Tipo: {data.trigger_type}</NodeBody>}
       <Handle type="source" position={Position.Right} className="!bg-blue-700 !border-blue-600" />
@@ -58,7 +54,7 @@ export function TriggerNode({ data, selected }) {
 export function ScheduleTriggerNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-amber-800/60">
-      <NodeHeader icon={Calendar} label={data.label || "Schedule Trigger"} n8nType="n8n-nodes-base.scheduleTrigger"
+      <NodeHeader icon={Calendar} label={data.label || "Agendamento"}
         iconColor="text-amber-400" bgColor="bg-amber-950/60" />
       {data.schedule && <NodeBody>Intervalo: {data.schedule}</NodeBody>}
       <Handle type="source" position={Position.Right} className="!bg-amber-700 !border-amber-600" />
@@ -70,7 +66,7 @@ export function ScheduleTriggerNode({ data, selected }) {
 export function AiAgentNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-violet-800/60">
-      <NodeHeader icon={Bot} label={data.label || "AI Agent"} n8nType="n8n-nodes-base.openAi"
+      <NodeHeader icon={Bot} label={data.label || "Agente IA"}
         iconColor="text-violet-400" bgColor="bg-violet-950/60" />
       {data.model && <NodeBody>Modelo: {data.model}</NodeBody>}
       {data.prompt && <NodeBody><span className="line-clamp-2">{data.prompt}</span></NodeBody>}
@@ -84,7 +80,7 @@ export function AiAgentNode({ data, selected }) {
 export function PromptNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-purple-800/60">
-      <NodeHeader icon={MessageSquare} label={data.label || "LLM Agent"} n8nType="@n8n/langchain.agent"
+      <NodeHeader icon={MessageSquare} label={data.label || "Agente LLM"}
         iconColor="text-purple-400" bgColor="bg-purple-950/60" />
       {data.prompt && <NodeBody><span className="line-clamp-2">{data.prompt}</span></NodeBody>}
       <Handle type="target" position={Position.Left} className="!bg-purple-700 !border-purple-600" />
@@ -97,7 +93,7 @@ export function PromptNode({ data, selected }) {
 export function ConditionNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-yellow-800/60">
-      <NodeHeader icon={GitBranch} label={data.label || "Condição"} n8nType="n8n-nodes-base.if"
+      <NodeHeader icon={GitBranch} label={data.label || "Se / Então"}
         iconColor="text-yellow-400" bgColor="bg-yellow-950/60" />
       {data.condition_field && (
         <NodeBody>{data.condition_field} {data.operator} {data.condition_value}</NodeBody>
@@ -115,7 +111,7 @@ export function ConditionNode({ data, selected }) {
 export function DelayNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-cyan-800/60">
-      <NodeHeader icon={Clock} label={data.label || "Aguardar"} n8nType="n8n-nodes-base.wait"
+      <NodeHeader icon={Clock} label={data.label || "Aguardar"}
         iconColor="text-cyan-400" bgColor="bg-cyan-950/60" />
       {data.delay_hours && <NodeBody>{data.delay_hours}h de espera</NodeBody>}
       <Handle type="target" position={Position.Left} className="!bg-cyan-700 !border-cyan-600" />
@@ -128,9 +124,9 @@ export function DelayNode({ data, selected }) {
 export function HttpRequestNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-orange-800/60">
-      <NodeHeader icon={Globe} label={data.label || "HTTP Request"} n8nType="n8n-nodes-base.httpRequest"
+      <NodeHeader icon={Globe} label={data.label || "Requisição Externa"}
         iconColor="text-orange-400" bgColor="bg-orange-950/60" />
-      {data.method && <NodeBody>{data.method} {data.url ? `• ${data.url.substring(0, 20)}...` : ""}</NodeBody>}
+      {data.method && <NodeBody>{data.method}{data.url ? ` • ${data.url.substring(0, 20)}...` : ""}</NodeBody>}
       <Handle type="target" position={Position.Left} className="!bg-orange-700 !border-orange-600" />
       <Handle type="source" position={Position.Right} className="!bg-orange-700 !border-orange-600" />
     </NodeBase>
@@ -151,7 +147,7 @@ export function ClickMassaNode({ data, selected }) {
   const actionLabel = data.action ? (ACTION_LABELS[data.action] || data.action) : null;
   return (
     <NodeBase selected={selected} colorClass="border-zinc-500">
-      <NodeHeader icon={Workflow} label={data.label || "Click Massa"} n8nType="httpRequest → CLICKMASSA"
+      <NodeHeader icon={Workflow} label={data.label || "Click Massa"}
         iconColor="text-white" bgColor="bg-zinc-700" />
       {actionLabel && <NodeBody>{actionLabel}</NodeBody>}
       <Handle type="target" position={Position.Left} />
@@ -164,7 +160,7 @@ export function ClickMassaNode({ data, selected }) {
 export function SkillExecutorNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-emerald-800/60">
-      <NodeHeader icon={Cpu} label={data.label || "Habilidade IA"} n8nType="@n8n/langchain.agent"
+      <NodeHeader icon={Cpu} label={data.label || "Habilidade IA"}
         iconColor="text-emerald-400" bgColor="bg-emerald-950/60" />
       {data.skill && <NodeBody>Habilidade: {data.skill}</NodeBody>}
       <Handle type="target" position={Position.Left} className="!bg-emerald-700 !border-emerald-600" />
@@ -177,7 +173,7 @@ export function SkillExecutorNode({ data, selected }) {
 export function CodeNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-zinc-600">
-      <NodeHeader icon={Code} label={data.label || "Código"} n8nType="n8n-nodes-base.code"
+      <NodeHeader icon={Code} label={data.label || "Código"}
         iconColor="text-zinc-300" bgColor="bg-zinc-800" />
       {data.language && <NodeBody className="font-mono">{data.language}</NodeBody>}
       <Handle type="target" position={Position.Left} />
@@ -190,7 +186,7 @@ export function CodeNode({ data, selected }) {
 export function SetVariablesNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-teal-800/60">
-      <NodeHeader icon={Database} label={data.label || "Transformar Dados"} n8nType="n8n-nodes-base.set"
+      <NodeHeader icon={Database} label={data.label || "Transformar Dados"}
         iconColor="text-teal-400" bgColor="bg-teal-950/60" />
       <Handle type="target" position={Position.Left} className="!bg-teal-700 !border-teal-600" />
       <Handle type="source" position={Position.Right} className="!bg-teal-700 !border-teal-600" />
@@ -202,10 +198,23 @@ export function SetVariablesNode({ data, selected }) {
 export function OutputNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-zinc-600">
-      <NodeHeader icon={Flag} label={data.label || "Saída"} n8nType="n8n-nodes-base.set"
+      <NodeHeader icon={Flag} label={data.label || "Finalizar"}
         iconColor="text-zinc-300" bgColor="bg-zinc-800" />
-      {data.output_type && <NodeBody>Tipo: {data.output_type}</NodeBody>}
+      {data.output_type && <NodeBody>Saída: {data.output_type}</NodeBody>}
       <Handle type="target" position={Position.Left} />
+    </NodeBase>
+  );
+}
+
+// ─── VOICE CALL ──────────────────────────────
+export function VoiceCallNode({ data, selected }) {
+  return (
+    <NodeBase selected={selected} colorClass="border-pink-800/60">
+      <NodeHeader icon={Phone} label={data.label || "Chamada de Voz"}
+        iconColor="text-pink-400" bgColor="bg-pink-950/60" />
+      {data.phone_number && <NodeBody>{data.phone_number}</NodeBody>}
+      <Handle type="target" position={Position.Left} className="!bg-pink-700 !border-pink-600" />
+      <Handle type="source" position={Position.Right} className="!bg-pink-700 !border-pink-600" />
     </NodeBase>
   );
 }
@@ -227,4 +236,5 @@ export const nodeTypes = {
   code: CodeNode,
   set_variables: SetVariablesNode,
   output: OutputNode,
+  voice_call: VoiceCallNode,
 };
