@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from bson import ObjectId
+from bson.errors import InvalidId
 from datetime import datetime, timezone
 
 from core.database import get_db
@@ -9,6 +10,13 @@ from core.auth import get_current_user
 from services.clickmassa import ClickMassaConnector
 
 router = APIRouter()
+
+
+def _oid(id_str: str, name: str = "recurso") -> ObjectId:
+    try:
+        return ObjectId(id_str)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail=f"ID de {name} inválido")
 
 
 class IntegrationCreate(BaseModel):
@@ -51,7 +59,7 @@ async def create_integration(data: IntegrationCreate, user: dict = Depends(get_c
 async def test_integration(integration_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
     integration = await db.integrations.find_one(
-        {"_id": ObjectId(integration_id), "tenant_id": user["tenant_id"]}
+        {"_id": _oid(integration_id, "integração"), "tenant_id": user["tenant_id"]}
     )
     if not integration:
         raise HTTPException(status_code=404, detail="Integração não encontrada")
@@ -59,8 +67,10 @@ async def test_integration(integration_id: str, user: dict = Depends(get_current
     if integration["provider"] == "clickmassa":
         connector = ClickMassaConnector(integration.get("credentials", {}))
         result = await connector.test_connection()
+        # Adiciona flag is_mock para uso no frontend (badge "Demo")
+        result["is_mock"] = connector.is_mock
     else:
-        result = {"success": True, "message": "Conexão simulada com sucesso (mock)"}
+        result = {"success": True, "message": "Conexão simulada com sucesso (mock)", "is_mock": True}
 
     status = "connected" if result.get("success") else "error"
     await db.integrations.update_one(
@@ -76,12 +86,12 @@ async def update_integration(
 ):
     db = get_db()
     result = await db.integrations.update_one(
-        {"_id": ObjectId(integration_id), "tenant_id": user["tenant_id"]},
+        {"_id": _oid(integration_id, "integração"), "tenant_id": user["tenant_id"]},
         {"$set": {**data.model_dump(), "updated_at": datetime.now(timezone.utc).isoformat()}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Integração não encontrada")
-    integration = await db.integrations.find_one({"_id": ObjectId(integration_id)})
+    integration = await db.integrations.find_one({"_id": _oid(integration_id)})
     return fmt(integration)
 
 
@@ -89,7 +99,7 @@ async def update_integration(
 async def delete_integration(integration_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
     result = await db.integrations.delete_one(
-        {"_id": ObjectId(integration_id), "tenant_id": user["tenant_id"]}
+        {"_id": _oid(integration_id, "integração"), "tenant_id": user["tenant_id"]}
     )
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Integração não encontrada")

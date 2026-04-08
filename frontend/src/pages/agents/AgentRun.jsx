@@ -76,8 +76,6 @@ export default function AgentRun() {
 
   const startExecution = useCallback(() => {
     if (running) return stopExecution();
-    const token = localStorage.getItem("ai_studio_token");
-    if (!token) { toast.error("Sessão expirada. Faça login novamente."); return; }
 
     // Reset state
     setNodeStatus({});
@@ -86,7 +84,8 @@ export default function AgentRun() {
     setExecutionDone(false);
     setRunning(true);
 
-    const wsUrl = `${BACKEND_WS}/api/workspace/ws/run/${id}?token=${encodeURIComponent(token)}&input_text=${encodeURIComponent(inputText)}`;
+    // Browser automatically sends httpOnly cookies on same-origin WebSocket — no token needed in URL
+    const wsUrl = `${BACKEND_WS}/api/workspace/ws/run/${id}?input_text=${encodeURIComponent(inputText)}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

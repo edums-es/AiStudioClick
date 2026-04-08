@@ -7,18 +7,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Auth state is driven entirely by the httpOnly cookie — no localStorage needed
   const checkAuth = useCallback(async () => {
     try {
-      const token = localStorage.getItem("ai_studio_token");
-      if (token) {
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      }
       const { data } = await api.get("/auth/me");
       setUser(data);
     } catch {
       setUser(null);
-      localStorage.removeItem("ai_studio_token");
-      delete api.defaults.headers.common["Authorization"];
     } finally {
       setLoading(false);
     }
@@ -30,28 +25,18 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const { data } = await api.post("/auth/login", { email, password });
-    if (data.token) {
-      localStorage.setItem("ai_studio_token", data.token);
-      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-    }
     setUser(data);
     return data;
   };
 
   const register = async (name, email, password) => {
     const { data } = await api.post("/auth/register", { name, email, password });
-    if (data.token) {
-      localStorage.setItem("ai_studio_token", data.token);
-      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-    }
     setUser(data);
     return data;
   };
 
   const logout = async () => {
     try { await api.post("/auth/logout"); } catch {}
-    localStorage.removeItem("ai_studio_token");
-    delete api.defaults.headers.common["Authorization"];
     setUser(null);
   };
 

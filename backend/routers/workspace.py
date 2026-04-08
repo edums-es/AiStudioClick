@@ -91,7 +91,8 @@ async def run_agent_websocket(
     await websocket.accept()
 
     # Authenticate via token
-    payload = _decode_ws_token(token)
+    # Authenticate via token
+    payload = _decode_ws_token(raw_token)
     if not payload:
         await websocket.send_json({"type": "error", "error": "Token inválido ou expirado"})
         await websocket.close(code=4001)

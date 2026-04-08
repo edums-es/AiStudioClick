@@ -10,34 +10,38 @@ import api from "@/lib/api";
 import NodePanel from "@/components/builder/NodePanel";
 import { toast } from "sonner";
 import {
-  Play, Save, Plus, ChevronLeft, Trash2, Zap, MessageSquare,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Save, Plus, ChevronLeft, Trash2, Zap, MessageSquare,
   GitBranch, Clock, Globe, Workflow, Cpu, Flag, Rocket,
   Calendar, Bot, Code, Database, Webhook, CheckCircle, AlertCircle,
   ExternalLink, RefreshCw
 } from "lucide-react";
 
 const NODE_PALETTE = [
-  { type: "trigger", label: "Webhook", icon: Webhook, n8n: "webhook" },
-  { type: "schedule_trigger", label: "Schedule", icon: Calendar, n8n: "scheduleTrigger" },
-  { type: "ai_agent", label: "AI Agent", icon: Bot, n8n: "openAi" },
-  { type: "prompt", label: "LLM Agent", icon: MessageSquare, n8n: "langchain.agent" },
-  { type: "condition", label: "Condição (IF)", icon: GitBranch, n8n: "if" },
-  { type: "delay", label: "Aguardar", icon: Clock, n8n: "wait" },
-  { type: "http_request", label: "HTTP Request", icon: Globe, n8n: "httpRequest" },
-  { type: "clickmassa", label: "Click Massa", icon: Workflow, n8n: "httpRequest" },
-  { type: "skill_executor", label: "Skill", icon: Cpu, n8n: "langchain.agent" },
-  { type: "code", label: "Código", icon: Code, n8n: "code" },
-  { type: "set_variables", label: "Transformar", icon: Database, n8n: "set" },
-  { type: "output", label: "Saída", icon: Flag, n8n: "set" },
+  { type: "trigger",          label: "Gatilho / Início",   icon: Webhook,   n8n: "webhook" },
+  { type: "schedule_trigger", label: "Agendamento",         icon: Calendar,  n8n: "scheduleTrigger" },
+  { type: "ai_agent",         label: "Agente IA",           icon: Bot,       n8n: "openAi" },
+  { type: "prompt",           label: "Agente LLM",          icon: MessageSquare, n8n: "langchain.agent" },
+  { type: "condition",        label: "Se / Então",          icon: GitBranch, n8n: "if" },
+  { type: "delay",            label: "Aguardar",            icon: Clock,     n8n: "wait" },
+  { type: "http_request",     label: "Requisição Externa",  icon: Globe,     n8n: "httpRequest" },
+  { type: "clickmassa",       label: "Click Massa",         icon: Workflow,  n8n: "httpRequest" },
+  { type: "skill_executor",   label: "Habilidade IA",       icon: Cpu,       n8n: "langchain.agent" },
+  { type: "code",             label: "Código",              icon: Code,      n8n: "code" },
+  { type: "set_variables",    label: "Transformar Dados",   icon: Database,  n8n: "set" },
+  { type: "output",           label: "Finalizar",           icon: Flag,      n8n: "set" },
 ];
 
 const DEPLOY_STATUS = {
-  not_deployed: { label: "Não deployado", cls: "text-zinc-500 border-zinc-700", icon: null },
-  pending: { label: "Pendente (n8n offline)", cls: "text-yellow-500 border-yellow-800/50", icon: AlertCircle },
-  deployed: { label: "Deployado", cls: "text-blue-400 border-blue-800/50", icon: CheckCircle },
-  active: { label: "Ativo no n8n", cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
-  error: { label: "Erro no deploy", cls: "text-red-400 border-red-800/50", icon: AlertCircle },
-  not_configured: { label: "n8n não configurado", cls: "text-zinc-500 border-zinc-700", icon: AlertCircle },
+  not_deployed:   { label: "Não deployado",       cls: "text-zinc-500 border-zinc-700",         icon: null },
+  pending:        { label: "Pendente (n8n offline)", cls: "text-yellow-500 border-yellow-800/50", icon: AlertCircle },
+  deployed:       { label: "Deployado",           cls: "text-blue-400 border-blue-800/50",      icon: CheckCircle },
+  active:         { label: "Ativo no n8n",        cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
+  error:          { label: "Erro no deploy",      cls: "text-red-400 border-red-800/50",        icon: AlertCircle },
+  not_configured: { label: "n8n não configurado", cls: "text-zinc-500 border-zinc-700",         icon: AlertCircle },
 };
 
 export default function AgentBuilder() {
@@ -55,6 +59,7 @@ export default function AgentBuilder() {
   const [deployData, setDeployData] = useState(null);
   const [deploying, setDeploying] = useState(false);
   const [showDeployPanel, setShowDeployPanel] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Load agent
   useEffect(() => {
@@ -64,16 +69,15 @@ export default function AgentBuilder() {
         const flow = data.flow_definition || { nodes: [], edges: [] };
         setNodes(flow.nodes || []);
         setEdges(flow.edges || []);
-        // Check for existing blueprint
         if (data.blueprint_id) {
           setBlueprintId(data.blueprint_id);
           loadDeployStatus(data.blueprint_id);
         }
-      });
+      }).catch(() => toast.error("Erro ao carregar o agente."));
     } else {
       setNodes([{
         id: "start-1", type: "trigger", position: { x: 100, y: 200 },
-        data: { label: "Webhook Trigger", path: "webhook" }
+        data: { label: "Gatilho / Início", path: "webhook" },
       }]);
     }
   }, [id]); // eslint-disable-line
@@ -95,14 +99,12 @@ export default function AgentBuilder() {
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
 
   const addNode = (type) => {
-    const nodeId = `${type}-${Date.now()}`;
     const palette = NODE_PALETTE.find((n) => n.type === type);
-    const newNode = {
-      id: nodeId, type,
+    setNodes((nds) => [...nds, {
+      id: `${type}-${Date.now()}`, type,
       position: { x: 250 + Math.random() * 200, y: 150 + Math.random() * 150 },
       data: { label: palette?.label || type },
-    };
-    setNodes((nds) => [...nds, newNode]);
+    }]);
     setShowPalette(false);
   };
 
@@ -113,11 +115,12 @@ export default function AgentBuilder() {
     setSelectedNode((prev) => prev ? { ...prev, data: { ...prev.data, ...newData } } : prev);
   };
 
-  const deleteSelectedNode = () => {
+  const confirmDeleteNode = () => {
     if (!selectedNode) return;
     setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
     setEdges((eds) => eds.filter((e) => e.source !== selectedNode.id && e.target !== selectedNode.id));
     setSelectedNode(null);
+    setShowDeleteDialog(false);
   };
 
   const handleSave = async () => {
@@ -133,18 +136,15 @@ export default function AgentBuilder() {
         savedAgent = data;
         navigate(`/agents/${data.id}/edit`, { replace: true });
       }
-      // Also save as n8n blueprint
       const { data: bp } = await api.post("/n8n/blueprints", {
-        name: agent.name,
-        description: agent.description,
-        nodes, edges,
-        agent_id: savedAgent.id,
+        name: agent.name, description: agent.description,
+        nodes, edges, agent_id: savedAgent.id,
       });
       setBlueprintId(bp.id);
-      toast.success("Fluxo salvo e blueprint criado!");
+      toast.success("Agente salvo com sucesso!");
     } catch (err) {
-      toast.error("Erro ao salvar. Tente novamente.");
-      console.error(err);
+      toast.error("Erro ao salvar agente. Verifique sua conexão.");
+      if (process.env.NODE_ENV === "development") console.error(err);
     } finally {
       setSaving(false);
     }
@@ -152,15 +152,12 @@ export default function AgentBuilder() {
 
   const handleDeploy = async (activate = false) => {
     if (!blueprintId) {
-      toast.error("Salve o fluxo antes de fazer o deploy.");
+      toast.error("Salve o agente antes de fazer o deploy.");
       return;
     }
     setDeploying(true);
     try {
-      const { data } = await api.post("/n8n/deploy", {
-        blueprint_id: blueprintId,
-        activate,
-      });
+      const { data } = await api.post("/n8n/deploy", { blueprint_id: blueprintId, activate });
       setDeployStatus(data.status || "deployed");
       setDeployData(data);
       if (data.success) {
@@ -181,6 +178,30 @@ export default function AgentBuilder() {
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950" data-testid="agent-builder">
+      {/* Confirm delete dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-zinc-950 border-zinc-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Remover nó?</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              Esta ação não pode ser desfeita. O nó e suas conexões serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteNode}
+              className="bg-red-600 text-white hover:bg-red-500"
+              data-testid="confirm-delete-node-btn"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 h-14 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl z-50 shrink-0">
         <div className="flex items-center gap-3">
@@ -197,7 +218,7 @@ export default function AgentBuilder() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* n8n Status */}
+          {/* Deploy status badge */}
           <button
             onClick={() => setShowDeployPanel(!showDeployPanel)}
             data-testid="deploy-status-btn"
@@ -214,15 +235,14 @@ export default function AgentBuilder() {
               <Plus className="w-4 h-4" /> Adicionar nó
             </button>
             {showPalette && (
-              <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-md shadow-xl z-50 w-48">
+              <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-md shadow-xl z-50 w-52">
                 <div className="px-3 py-1.5 border-b border-zinc-800">
-                  <p className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">Nós n8n-compatíveis</p>
+                  <p className="text-[10px] text-zinc-500 uppercase font-semibold tracking-wider">Nós disponíveis</p>
                 </div>
-                {NODE_PALETTE.map(({ type, label, icon: Icon, n8n }) => (
+                {NODE_PALETTE.map(({ type, label, icon: Icon }) => (
                   <button key={type} onClick={() => addNode(type)} data-testid={`palette-node-${type}`}
-                    className="flex items-center justify-between w-full px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
-                    <div className="flex items-center gap-2"><Icon className="w-3.5 h-3.5" /> {label}</div>
-                    <span className="text-zinc-600 font-mono text-[9px]">{n8n}</span>
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+                    <Icon className="w-3.5 h-3.5" /> {label}
                   </button>
                 ))}
               </div>
@@ -230,8 +250,11 @@ export default function AgentBuilder() {
           </div>
 
           {selectedNode && (
-            <button onClick={deleteSelectedNode} data-testid="delete-node-btn"
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 border border-red-800/50 rounded-md hover:bg-red-950/30 transition-colors">
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              data-testid="delete-node-btn"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 border border-red-800/50 rounded-md hover:bg-red-950/30 transition-colors"
+            >
               <Trash2 className="w-4 h-4" />
             </button>
           )}
@@ -244,7 +267,7 @@ export default function AgentBuilder() {
           <button onClick={() => handleDeploy(false)} disabled={deploying} data-testid="deploy-n8n-button"
             className="flex items-center gap-2 px-4 py-1.5 bg-white text-zinc-950 rounded-md text-sm font-semibold hover:bg-zinc-100 transition-colors disabled:opacity-50">
             {deploying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
-            {deploying ? "Deployando..." : "Deploy n8n"}
+            {deploying ? "Enviando..." : "Deploy n8n"}
           </button>
         </div>
       </div>
@@ -265,15 +288,9 @@ export default function AgentBuilder() {
             )}
             {deployData?.n8n_url && (
               <a href={deployData.n8n_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
                 <ExternalLink className="w-3 h-3" /> Abrir no n8n
               </a>
-            )}
-            {blueprintId && (
-              <div>
-                <p className="text-xs text-zinc-500">Blueprint ID</p>
-                <p className="text-xs font-mono text-zinc-400 truncate max-w-32">{blueprintId}</p>
-              </div>
             )}
           </div>
           <div className="flex items-center gap-2">

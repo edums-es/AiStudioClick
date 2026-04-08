@@ -274,7 +274,17 @@ async def run_seed(db):
 
 async def _seed_admin(db):
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@clickmassa.com")
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    _env_password = os.environ.get("ADMIN_PASSWORD", "")
+    is_production = os.environ.get("ENVIRONMENT", "development") == "production"
+
+    if not _env_password:
+        if is_production:
+            raise RuntimeError(
+                "❌ ADMIN_PASSWORD não definido! "
+                "Defina a variável de ambiente ADMIN_PASSWORD antes de iniciar em produção."
+            )
+        logger.warning("⚠️  ADMIN_PASSWORD não definido — usando senha padrão de desenvolvimento (admin123)")
+    admin_password = _env_password or "admin123"  # Test credentials only — never use in production
 
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:

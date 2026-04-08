@@ -1,50 +1,38 @@
 """
-ClickMassaConnector — Service Layer for Click Massa API Integration
-================================================================
-Architecture:
-- AbstractConnectorProtocol: Base interface (MCP-ready foundation)
-- MockClickMassaProvider: Realistic mock for demo/development
-- ClickMassaConnector: Tenant-scoped connector, provider-swappable
-
-Future Evolution:
-- Replace MockClickMassaProvider with RealClickMassaProvider when API docs are available
-- Set credentials = {"api_key": "real_key", "workspace_id": "ws_xxx"} to switch providers
-- The connector architecture is compatible with future MCP server integrations
+ClickMassaConnector — Conector para a API do Clickmassa.
+Arquitetura com providers intercambiáveis:
+  - MockClickMassaProvider  : modo demo/dev (sem credenciais)
+  - RealClickMassaProvider  : API real (com server_url + api_token)
+  
+_resolve_provider() escolhe automaticamente baseado nas credenciais.
 """
 
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any
 from datetime import datetime
 import logging
+import httpx
 
 logger = logging.getLogger(__name__)
 
 
 class AbstractConnectorProtocol(ABC):
-    """Base protocol for all external service connectors — MCP-compatible interface."""
-
     @abstractmethod
     async def test_connection(self) -> Dict[str, Any]: ...
-
     @abstractmethod
     async def get_contact(self, phone: str) -> Optional[Dict[str, Any]]: ...
-
     @abstractmethod
     async def create_contact(self, data: Dict[str, Any]) -> Dict[str, Any]: ...
-
     @abstractmethod
     async def update_contact(self, contact_id: str, data: Dict[str, Any]) -> Dict[str, Any]: ...
-
     @abstractmethod
     async def apply_tag(self, contact_id: str, tag: str) -> Dict[str, Any]: ...
 
 
+# ─── MOCK ────────────────────────────────────────────────────────────────────
+
 class MockClickMassaProvider(AbstractConnectorProtocol):
-    """
-    Realistic mock implementation of Click Massa API.
-    Provides sensible responses for all operations in demo mode.
-    Replace with RealClickMassaProvider when credentials are available.
-    """
+    """Mock realista para demo/desenvolvimento. Sem chamadas de rede."""
 
     _contacts = [
         {"id": "cm001", "name": "João Silva", "phone": "+5511999990001",
@@ -56,29 +44,22 @@ class MockClickMassaProvider(AbstractConnectorProtocol):
     ]
 
     async def test_connection(self) -> Dict[str, Any]:
-        logger.info("[ClickMassa Mock] Testing connection")
         return {
             "success": True,
             "message": "Conexão com Click Massa estabelecida (modo demo)",
             "provider": "Click Massa Mock v1.0",
+            "is_mock": True,
             "latency_ms": 120,
             "timestamp": datetime.utcnow().isoformat(),
         }
 
     async def get_contact(self, phone: str) -> Optional[Dict[str, Any]]:
-        for c in self._contacts:
-            if c["phone"] == phone:
-                return c
-        return None
+        return next((c for c in self._contacts if c["phone"] == phone), None)
 
     async def create_contact(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        contact = {
-            "id": f"cm{len(self._contacts) + 1:03d}",
-            **data,
-            "created_at": datetime.utcnow().isoformat(),
-        }
+        contact = {"id": f"cm{len(self._contacts) + 1:03d}", **data,
+                   "created_at": datetime.utcnow().isoformat()}
         self._contacts.append(contact)
-        logger.info(f"[ClickMassa Mock] Contact created: {contact['id']}")
         return contact
 
     async def update_contact(self, contact_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -98,35 +79,123 @@ class MockClickMassaProvider(AbstractConnectorProtocol):
                 return {"success": True, "contact_id": contact_id, "tag": tag}
         return {"success": False, "error": "Contact not found"}
 
+    async def send_message(self, number: str, body: str, **kwargs) -> Dict[str, Any]:
+        return {"success": True, "message": "Mensagem simulada (mock)", "number": number}
+
     async def send_to_call(self, contact_id: str, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Stub for future voice provider integration via external connector."""
-        return {
-            "success": True,
-            "message": "Contato enfileirado para call (mock)",
-            "contact_id": contact_id,
+        return {"success": True, "message": "Contato enfileirado para call (mock)", "contact_id": contact_id}
+
+
+# ─── REAL ────────────────────────────────────────────────────────────────────
+
+class RealClickMassaProvider(AbstractConnectorProtocol):
+    """
+    Implementação real do conector Clickmassa.
+    Docs: https://docs-68.gitbook.io/documentacao/api-de-contatos
+    
+    Credenciais necessárias:
+      server_url  : https://enterprise-{server}api.{dominio}
+      api_token   : Bearer token gerado no PUSH
+      channel_id  : ID da integração API/Webhook (para send_message)
+    """
+
+    def __init__(self, credentials: Dict[str, Any]):
+        self.server_url = credentials.get("server_url", "").rstrip("/")
+        self.api_token = credentials.get("api_token", "")
+        self.channel_id = credentials.get("channel_id", "")
+        self.headers = {
+            "Authorization": f"Bearer {self.api_token}",
+            "Content-Type": "application/json",
         }
 
+    async def test_connection(self) -> Dict[str, Any]:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(f"{self.server_url}/v1/contacts/", headers=self.headers)
+                if resp.status_code in (200, 201):
+                    return {
+                        "success": True,
+                        "message": "Conexão com Clickmassa estabelecida com sucesso!",
+                        "provider": "Clickmassa Real API",
+                        "is_mock": False,
+                        "latency_ms": int(resp.elapsed.total_seconds() * 1000),
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                return {
+                    "success": False,
+                    "message": f"Erro HTTP {resp.status_code}: verifique o token e URL.",
+                }
+        except httpx.ConnectError:
+            return {"success": False, "message": "Não foi possível conectar. Verifique a URL do servidor."}
+        except Exception as e:
+            return {"success": False, "message": f"Erro de conexão: {str(e)}"}
+
+    async def get_contact(self, phone: str) -> Optional[Dict[str, Any]]:
+        clean = phone.replace("+", "").replace(" ", "").replace("-", "")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"{self.server_url}/v1/contacts/number/{clean}", headers=self.headers)
+            return resp.json() if resp.status_code == 200 else None
+
+    async def create_contact(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        payload = {
+            "name": data.get("name", ""),
+            "number": data.get("phone", "").replace("+", ""),
+            "email": data.get("email", ""),
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(f"{self.server_url}/v1/contacts/", headers=self.headers, json=payload)
+            return resp.json()
+
+    async def update_contact(self, contact_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.patch(f"{self.server_url}/v1/contacts/{contact_id}", headers=self.headers, json=data)
+            return resp.json()
+
+    async def apply_tag(self, contact_id: str, tag: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            get_resp = await client.get(f"{self.server_url}/v1/contacts/{contact_id}", headers=self.headers)
+            existing_tags = get_resp.json().get("tags", []) if get_resp.status_code == 200 else []
+            if tag not in existing_tags:
+                existing_tags.append(tag)
+            resp = await client.patch(
+                f"{self.server_url}/v1/contacts/{contact_id}",
+                headers=self.headers,
+                json={"tags": existing_tags},
+            )
+            return {"success": resp.status_code in (200, 201), "contact_id": contact_id, "tag": tag}
+
+    async def send_message(self, number: str, body: str, external_key: str = None) -> Dict[str, Any]:
+        payload = {"body": body, "number": number.replace("+", "")}
+        if external_key:
+            payload["externalKey"] = external_key
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{self.server_url}/v1/api/external/{self.channel_id}",
+                headers=self.headers,
+                json=payload,
+            )
+            return {"success": resp.status_code in (200, 201), "response": resp.json() if resp.content else {}}
+
+
+# ─── CONNECTOR ───────────────────────────────────────────────────────────────
 
 class ClickMassaConnector:
-    """
-    Main ClickMassa connector — tenant-scoped, provider-swappable.
-
-    Usage:
-        connector = ClickMassaConnector(credentials)
-        result = await connector.test_connection()
-
-    To switch to real API:
-        Pass credentials = {"api_key": "...", "workspace_id": "..."}
-        Implement RealClickMassaProvider and update _resolve_provider()
-    """
+    """Conector principal — tenant-scoped, provider automático baseado nas credenciais."""
 
     def __init__(self, credentials: Dict[str, Any] = None):
         self.credentials = credentials or {}
         self._provider = self._resolve_provider()
 
     def _resolve_provider(self) -> AbstractConnectorProtocol:
-        # Future: if self.credentials.get("api_key"): return RealClickMassaProvider(self.credentials)
+        if self.credentials.get("api_token") and self.credentials.get("server_url"):
+            logger.info("[ClickMassa] Usando RealClickMassaProvider")
+            return RealClickMassaProvider(self.credentials)
+        logger.info("[ClickMassa] Usando MockClickMassaProvider (modo demo)")
         return MockClickMassaProvider()
+
+    @property
+    def is_mock(self) -> bool:
+        return isinstance(self._provider, MockClickMassaProvider)
 
     async def test_connection(self) -> Dict[str, Any]:
         return await self._provider.test_connection()

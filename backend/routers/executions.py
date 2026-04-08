@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from bson import ObjectId
+from bson.errors import InvalidId
 from datetime import datetime, timezone
 import time
 
@@ -9,6 +10,13 @@ from core.database import get_db
 from core.auth import get_current_user
 
 router = APIRouter()
+
+
+def _oid(id_str: str, name: str = "recurso") -> ObjectId:
+    try:
+        return ObjectId(id_str)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail=f"ID de {name} inválido")
 
 
 class RunAgentInput(BaseModel):
@@ -33,7 +41,7 @@ async def list_executions(user: dict = Depends(get_current_user)):
 async def get_execution(execution_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
     e = await db.execution_logs.find_one(
-        {"_id": ObjectId(execution_id), "tenant_id": user["tenant_id"]}
+        {"_id": _oid(execution_id, "execução"), "tenant_id": user["tenant_id"]}
     )
     if not e:
         raise HTTPException(status_code=404, detail="Execução não encontrada")
@@ -44,7 +52,7 @@ async def get_execution(execution_id: str, user: dict = Depends(get_current_user
 async def run_agent(agent_id: str, data: RunAgentInput, user: dict = Depends(get_current_user)):
     db = get_db()
     agent = await db.agents.find_one(
-        {"_id": ObjectId(agent_id), "tenant_id": user["tenant_id"]}
+        {"_id": _oid(agent_id, "agente"), "tenant_id": user["tenant_id"]}
     )
     if not agent:
         raise HTTPException(status_code=404, detail="Agente não encontrado")

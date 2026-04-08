@@ -138,12 +138,22 @@ export function HttpRequestNode({ data, selected }) {
 }
 
 // ─── CLICK MASSA ─────────────────────────────
+const ACTION_LABELS = {
+  apply_tag:          "Aplicar Etiqueta",
+  send_message:       "Enviar Mensagem",
+  create_contact:     "Criar Contato",
+  create_appointment: "Criar Agendamento",
+  get_contact:        "Buscar Contato",
+  update_contact:     "Atualizar Contato",
+};
+
 export function ClickMassaNode({ data, selected }) {
+  const actionLabel = data.action ? (ACTION_LABELS[data.action] || data.action) : null;
   return (
     <NodeBase selected={selected} colorClass="border-zinc-500">
       <NodeHeader icon={Workflow} label={data.label || "Click Massa"} n8nType="httpRequest → CLICKMASSA"
         iconColor="text-white" bgColor="bg-zinc-700" />
-      {data.action && <NodeBody>Ação: {data.action}</NodeBody>}
+      {actionLabel && <NodeBody>{actionLabel}</NodeBody>}
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
     </NodeBase>
@@ -154,9 +164,9 @@ export function ClickMassaNode({ data, selected }) {
 export function SkillExecutorNode({ data, selected }) {
   return (
     <NodeBase selected={selected} colorClass="border-emerald-800/60">
-      <NodeHeader icon={Cpu} label={data.label || "Skill Executor"} n8nType="@n8n/langchain.agent"
+      <NodeHeader icon={Cpu} label={data.label || "Habilidade IA"} n8nType="@n8n/langchain.agent"
         iconColor="text-emerald-400" bgColor="bg-emerald-950/60" />
-      {data.skill && <NodeBody>Skill: {data.skill}</NodeBody>}
+      {data.skill && <NodeBody>Habilidade: {data.skill}</NodeBody>}
       <Handle type="target" position={Position.Left} className="!bg-emerald-700 !border-emerald-600" />
       <Handle type="source" position={Position.Right} className="!bg-emerald-700 !border-emerald-600" />
     </NodeBase>

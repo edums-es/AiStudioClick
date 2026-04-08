@@ -2,17 +2,12 @@ import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// withCredentials=true sends httpOnly cookies automatically — no localStorage token needed
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
-
-// Restore token from localStorage on module load
-const token = localStorage.getItem("ai_studio_token");
-if (token) {
-  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-}
 
 export function formatError(detail) {
   if (!detail) return "Ocorreu um erro. Tente novamente.";

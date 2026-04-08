@@ -1,19 +1,11 @@
 """
-LLM Provider Layer — Abstract interface for pluggable AI model providers
-======================================================================
-Architecture:
-- AbstractLLMProvider: Defines the contract for all LLM providers
-- MockLLMProvider: Demo/testing provider with realistic responses
-- get_llm_provider(): Factory — returns real provider if credentials present, else mock
+LLM Provider Layer — interface abstrata para providers de IA plugáveis.
 
-Future integrations (implement the provider class and update get_llm_provider):
-- OpenAIProvider (OPENAI_API_KEY)
-- AnthropicProvider (ANTHROPIC_API_KEY)
-- GeminiProvider (GOOGLE_API_KEY)
+Providers disponíveis:
+  - OpenAIProvider  : OpenAI via emergentintegrations (EMERGENT_LLM_KEY)
+  - MockLLMProvider : respostas simuladas para demo/dev sem chave
 
-MCP Future Note:
-This layer is designed to be extended as an MCP tool provider.
-The AbstractLLMProvider interface can map directly to MCP tool schemas.
+get_llm_provider() retorna o melhor provider disponível.
 """
 
 from abc import ABC, abstractmethod
@@ -26,16 +18,14 @@ logger = logging.getLogger(__name__)
 
 class AbstractLLMProvider(ABC):
     @abstractmethod
-    async def complete(self, prompt: str, system: Optional[str] = None, **kwargs) -> Dict[str, Any]:
-        ...
+    async def complete(self, prompt: str, system: Optional[str] = None, **kwargs) -> Dict[str, Any]: ...
 
     @abstractmethod
-    def get_model_name(self) -> str:
-        ...
+    def get_model_name(self) -> str: ...
 
 
 class MockLLMProvider(AbstractLLMProvider):
-    """Demo LLM provider with realistic domain-specific responses."""
+    """Demo provider com respostas domain-specific realistas."""
 
     _responses = {
         "qualif": "Lead qualificado. Score: 8/10. Interesse alto em automação de vendas. Próxima ação: Agendar demo técnica.",
@@ -51,26 +41,51 @@ class MockLLMProvider(AbstractLLMProvider):
         p = prompt.lower()
         key = next((k for k in self._responses if k in p), "default")
         response = self._responses[key]
-        logger.info(f"[MockLLM] Completing prompt ({len(prompt)} chars)")
+        logger.info(f"[MockLLM] Completando prompt ({len(prompt)} chars)")
         return {
             "content": response,
             "model": "mock-llm-v1",
-            "usage": {
-                "prompt_tokens": len(prompt.split()),
-                "completion_tokens": len(response.split()),
-                "total_tokens": len(prompt.split()) + len(response.split()),
-            },
+            "usage": {"total_tokens": len(prompt.split()) + len(response.split())},
         }
 
     def get_model_name(self) -> str:
         return "mock-llm-v1 (demo)"
 
 
+class OpenAIProvider(AbstractLLMProvider):
+    """OpenAI GPT-4o via emergentintegrations com EMERGENT_LLM_KEY."""
+
+    def __init__(self):
+        self.api_key = os.environ.get("EMERGENT_LLM_KEY", "")
+        self.model = "gpt-4o"
+
+    async def complete(self, prompt: str, system: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import uuid
+        session_id = kwargs.get("session_id", str(uuid.uuid4()))
+        chat = LlmChat(
+            api_key=self.api_key,
+            session_id=session_id,
+            system_message=system or "Você é um assistente de IA no AI Studio Click Massa.",
+        ).with_model("openai", self.model)
+        response = await chat.send_message(UserMessage(text=prompt))
+        return {
+            "content": response or "",
+            "model": self.model,
+            "usage": {},
+        }
+
+    def get_model_name(self) -> str:
+        return f"openai/{self.model} (emergentintegrations)"
+
+
 def get_llm_provider() -> AbstractLLMProvider:
-    """Factory for LLM provider. Priority: OpenAI > Anthropic > Gemini > Mock."""
-    if os.environ.get("OPENAI_API_KEY"):
-        logger.info("OPENAI_API_KEY found — OpenAI provider ready to implement")
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        logger.info("ANTHROPIC_API_KEY found — Anthropic provider ready to implement")
-    logger.info("Using MockLLMProvider (demo mode)")
+    """Factory — retorna OpenAI se EMERGENT_LLM_KEY estiver configurado, senão Mock."""
+    if os.environ.get("EMERGENT_LLM_KEY"):
+        try:
+            logger.info("[LLMProvider] EMERGENT_LLM_KEY encontrado — usando OpenAIProvider")
+            return OpenAIProvider()
+        except Exception as e:
+            logger.warning(f"[LLMProvider] OpenAIProvider falhou ao inicializar: {e} — usando Mock")
+    logger.info("[LLMProvider] Usando MockLLMProvider (modo demo)")
     return MockLLMProvider()
