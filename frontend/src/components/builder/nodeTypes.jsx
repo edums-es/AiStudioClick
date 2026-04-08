@@ -146,12 +146,12 @@ const ACTION_LABELS = {
 export function ClickMassaNode({ data, selected }) {
   const actionLabel = data.action ? (ACTION_LABELS[data.action] || data.action) : null;
   return (
-    <NodeBase selected={selected} colorClass="border-zinc-500">
-      <NodeHeader icon={Workflow} label={data.label || "Click Massa"}
-        iconColor="text-white" bgColor="bg-zinc-700" />
+    <NodeBase selected={selected} colorClass="border-indigo-800/60">
+      <NodeHeader icon={Workflow} label={data.label || "CRM Clickmassa"}
+        iconColor="text-indigo-400" bgColor="bg-indigo-950/60" />
       {actionLabel && <NodeBody>{actionLabel}</NodeBody>}
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      <Handle type="target" position={Position.Left} className="!bg-indigo-700 !border-indigo-600" />
+      <Handle type="source" position={Position.Right} className="!bg-indigo-700 !border-indigo-600" />
     </NodeBase>
   );
 }

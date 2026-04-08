@@ -11,7 +11,8 @@ import logging
 from typing import Optional
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks
+from bson import ObjectId
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
 from core.database import get_db
@@ -48,7 +49,7 @@ async def _process_and_reply(
     response_text = await run_llm(
         prompt=payload.mensagem_cliente,
         system=(
-            "Você é um assistente de atendimento do AI Studio Click Massa. "
+            "Você é um assistente de atendimento inteligente. "
             "Responda de forma clara, breve e em português do Brasil."
         ),
         model="gpt-4o",
@@ -102,5 +103,15 @@ async def receive_clickmassa_message(
     Recebe mensagem do Clickmassa, processa com LLM em background e responde.
     Retorna 200 imediatamente (o Clickmassa exige resposta rápida).
     """
+    # Validar que o tenant existe
+    db = get_db()
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="tenant_id inválido")
+    tenant = await db.tenants.find_one({"_id": oid})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant não encontrado")
+
     background_tasks.add_task(_process_and_reply, tenant_id, payload)
     return {"received": True, "session_id": payload.sessionId}

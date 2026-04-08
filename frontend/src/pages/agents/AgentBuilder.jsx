@@ -21,28 +21,28 @@ import {
 } from "lucide-react";
 
 const NODE_PALETTE = [
-  { type: "trigger",          label: "Gatilho / Início",   icon: Webhook,   _internal_type: "webhook" },
-  { type: "schedule_trigger", label: "Agendamento",         icon: Calendar,  _internal_type: "scheduleTrigger" },
-  { type: "ai_agent",         label: "Agente IA",           icon: Bot,       _internal_type: "openAi" },
-  { type: "prompt",           label: "Agente LLM",          icon: MessageSquare, _internal_type: "langchain.agent" },
-  { type: "condition",        label: "Se / Então",          icon: GitBranch, _internal_type: "if" },
-  { type: "delay",            label: "Aguardar",            icon: Clock,     _internal_type: "wait" },
-  { type: "http_request",     label: "Requisição Externa",  icon: Globe,     _internal_type: "httpRequest" },
-  { type: "clickmassa",       label: "Click Massa",         icon: Workflow,  _internal_type: "httpRequest" },
-  { type: "voice_call",       label: "Chamada de Voz",      icon: Phone,     _internal_type: "httpRequest" },
-  { type: "skill_executor",   label: "Habilidade IA",       icon: Cpu,       _internal_type: "langchain.agent" },
-  { type: "code",             label: "Código",              icon: Code,      _internal_type: "code" },
-  { type: "set_variables",    label: "Transformar Dados",   icon: Database,  _internal_type: "set" },
-  { type: "output",           label: "Finalizar",           icon: Flag,      _internal_type: "set" },
+  { type: "trigger",          label: "Gatilho / Início",   icon: Webhook,       _engineType: "webhook" },
+  { type: "schedule_trigger", label: "Agendamento",         icon: Calendar,      _engineType: "scheduleTrigger" },
+  { type: "ai_agent",         label: "Agente IA",           icon: Bot,           _engineType: "openAi" },
+  { type: "prompt",           label: "Agente LLM",          icon: MessageSquare, _engineType: "langchain.agent" },
+  { type: "condition",        label: "Se / Então",          icon: GitBranch,     _engineType: "if" },
+  { type: "delay",            label: "Aguardar",            icon: Clock,         _engineType: "wait" },
+  { type: "http_request",     label: "Requisição Externa",  icon: Globe,         _engineType: "httpRequest" },
+  { type: "clickmassa",       label: "CRM Clickmassa",      icon: Workflow,      _engineType: "httpRequest" },
+  { type: "skill_executor",   label: "Habilidade IA",       icon: Cpu,           _engineType: "langchain.agent" },
+  { type: "code",             label: "Código",              icon: Code,          _engineType: "code" },
+  { type: "set_variables",    label: "Transformar Dados",   icon: Database,      _engineType: "set" },
+  { type: "output",           label: "Finalizar",           icon: Flag,          _engineType: "set" },
+  { type: "voice_call",       label: "Chamada de Voz",      icon: Phone,         _engineType: "httpRequest" },
 ];
 
 const DEPLOY_STATUS = {
-  not_deployed:   { label: "Não publicado",                      cls: "text-zinc-500 border-zinc-700",         icon: null },
-  pending:        { label: "Pendente — aguardando configuração",  cls: "text-yellow-500 border-yellow-800/50",  icon: AlertCircle },
-  deployed:       { label: "Publicado",                          cls: "text-blue-400 border-blue-800/50",      icon: CheckCircle },
-  active:         { label: "Ativo",                              cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
-  error:          { label: "Erro ao publicar",                   cls: "text-red-400 border-red-800/50",        icon: AlertCircle },
-  not_configured: { label: "Motor de execução não configurado",  cls: "text-zinc-500 border-zinc-700",         icon: AlertCircle },
+  not_deployed:   { label: "Não publicado",          cls: "text-zinc-500 border-zinc-700",          icon: null },
+  pending:        { label: "Pendente",               cls: "text-yellow-500 border-yellow-800/50",   icon: AlertCircle },
+  deployed:       { label: "Publicado",              cls: "text-blue-400 border-blue-800/50",       icon: CheckCircle },
+  active:         { label: "Ativo",                  cls: "text-emerald-400 border-emerald-800/50", icon: CheckCircle },
+  error:          { label: "Erro ao publicar",       cls: "text-red-400 border-red-800/50",         icon: AlertCircle },
+  not_configured: { label: "Motor não configurado",  cls: "text-zinc-500 border-zinc-700",          icon: AlertCircle },
 };
 
 export default function AgentBuilder() {

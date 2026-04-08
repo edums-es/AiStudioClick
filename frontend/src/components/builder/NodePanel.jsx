@@ -231,7 +231,7 @@ export default function NodePanel({ node, onUpdate, onClose }) {
           <>
             <Field label="Rótulo">
               <input value={data.label || ""} onChange={(e) => upd("label", e.target.value)}
-                placeholder="Click Massa" className={inputCls(false)} />
+                placeholder="CRM Clickmassa" className={inputCls(false)} />
             </Field>
             <Field label="Ação">
               <Select value={data.action || ""} onValueChange={(v) => upd("action", v)}>
@@ -271,6 +271,38 @@ export default function NodePanel({ node, onUpdate, onClose }) {
             <Field label="Nome da Habilidade">
               <input value={data.skill || ""} onChange={(e) => upd("skill", e.target.value)}
                 placeholder="ex: Qualificar Lead" className={inputCls(false)} />
+            </Field>
+          </>
+        );
+
+      case "voice_call":
+        return (
+          <>
+            <Field label="Rótulo">
+              <input value={data.label || ""} onChange={(e) => upd("label", e.target.value)}
+                placeholder="Chamada de Voz" className={inputCls(false)} />
+            </Field>
+            <Field label="Número de Destino">
+              <input value={data.phone_number || ""} onChange={(e) => upd("phone_number", e.target.value)}
+                placeholder="+5511999990001" className={inputCls(false)} />
+            </Field>
+            <Field label="Script de Abertura">
+              <textarea value={data.script || ""} onChange={(e) => upd("script", e.target.value)}
+                placeholder="Olá, aqui é o assistente..." rows={3}
+                className={`${inputCls(false)} resize-none`} />
+            </Field>
+            <Field label="Provedor">
+              <Select value={data.voice_provider || ""} onValueChange={(v) => upd("voice_provider", v)}>
+                <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200 text-sm h-9">
+                  <SelectValue placeholder="Selecione o provedor..." />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-700">
+                  <SelectItem value="vapi" className="text-zinc-200 focus:bg-zinc-800">Vapi.ai</SelectItem>
+                  <SelectItem value="bland" className="text-zinc-200 focus:bg-zinc-800">Bland.ai</SelectItem>
+                  <SelectItem value="twilio" className="text-zinc-200 focus:bg-zinc-800">Twilio</SelectItem>
+                  <SelectItem value="custom" className="text-zinc-200 focus:bg-zinc-800">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
           </>
         );

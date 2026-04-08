@@ -27,9 +27,9 @@ export default function Settings() {
       const { data } = await api.get("/workspace/n8n-config");
       setN8nStatus(data);
       setN8nConfig(prev => ({ ...prev, api_key: "" }));
-      toast.success("Configuração n8n salva!");
+      toast.success("Configuração do motor de execução salva!");
     } catch {
-      toast.error("Erro ao salvar configuração n8n.");
+      toast.error("Erro ao salvar configuração.");
     } finally {
       setSavingN8n(false);
     }
@@ -88,37 +88,38 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Architecture Info */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-4 h-4 text-zinc-400" />
-            <h2 className="text-sm font-semibold text-white">Stack & Arquitetura</h2>
+        {process.env.NODE_ENV === "development" && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="w-4 h-4 text-zinc-400" />
+              <h2 className="text-sm font-semibold text-white">Stack & Arquitetura (dev)</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {[
+                ["Frontend", "React 19 + TailwindCSS + Shadcn/UI"],
+                ["Backend", "FastAPI + Motor (MongoDB)"],
+                ["Auth", "JWT (httpOnly cookies + Bearer)"],
+                ["Builder", "React Flow (@xyflow/react)"],
+                ["LLM Provider", "emergentintegrations — OpenAI gpt-4o (real)"],
+                ["CRM Connector", "Clickmassa + outros (via integrações)"],
+                ["External Connectors", "REST, Webhook, Voice (stubs prontos)"],
+                ["MCP Future", "Interfaces abstratas preparadas"],
+              ].map(([k, v]) => (
+                <div key={k} className="bg-zinc-950 border border-zinc-800 rounded p-3">
+                  <p className="text-zinc-500 mb-0.5">{k}</p>
+                  <p className="text-zinc-300 font-medium">{v}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {[
-              ["Frontend", "React 19 + TailwindCSS + Shadcn/UI"],
-              ["Backend", "FastAPI + Motor (MongoDB)"],
-              ["Auth", "JWT (httpOnly cookies + Bearer)"],
-              ["Builder", "React Flow (@xyflow/react)"],
-              ["LLM Provider", "emergentintegrations — OpenAI gpt-4o (real)"],
-              ["Click Massa", "Mock Connector (service layer pronto)"],
-              ["External Connectors", "REST, Webhook, Voice (stubs prontos)"],
-              ["MCP Future", "Interfaces abstratas preparadas"],
-            ].map(([k, v]) => (
-              <div key={k} className="bg-zinc-950 border border-zinc-800 rounded p-3">
-                <p className="text-zinc-500 mb-0.5">{k}</p>
-                <p className="text-zinc-300 font-medium">{v}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* n8n Integration */}
+        {/* Motor de Execução */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5" data-testid="n8n-config-section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Workflow className="w-4 h-4 text-zinc-400" />
-              <h2 className="text-sm font-semibold text-white">Integração n8n</h2>
+              <h2 className="text-sm font-semibold text-white">Motor de Execução de Agentes</h2>
             </div>
             {n8nStatus && (
               <span className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded border ${
@@ -128,29 +129,29 @@ export default function Settings() {
               }`}>
                 {n8nStatus.configured
                   ? <><CheckCircle2 className="w-3 h-3" /> Configurado</>
-                  : <><AlertCircle className="w-3 h-3" /> Não configurado</>
+                  : <><AlertCircle className="w-3 h-3" /> Não configurado — modo simulado</>
                 }
               </span>
             )}
           </div>
           <p className="text-xs text-zinc-500 mb-4">
-            Configure sua instância n8n para fazer deploy de agentes. Os deployments usarão estas credenciais por workspace.
+            Configure o motor de execução para publicar e ativar seus agentes. As credenciais ficam salvas por workspace.
           </p>
           <form onSubmit={handleSaveN8n} className="space-y-3">
             <div>
-              <label className="block text-xs text-zinc-500 uppercase font-semibold tracking-wider mb-1.5">URL da instância n8n</label>
+              <label className="block text-xs text-zinc-500 uppercase font-semibold tracking-wider mb-1.5">URL do Servidor de Execução</label>
               <input
                 type="url"
                 value={n8nConfig.api_url}
                 onChange={(e) => setN8nConfig(p => ({ ...p, api_url: e.target.value }))}
-                placeholder="https://seu-n8n.exemplo.com"
+                placeholder="https://seu-servidor.exemplo.com"
                 data-testid="n8n-url-input"
                 className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
               <label className="block text-xs text-zinc-500 uppercase font-semibold tracking-wider mb-1.5">
-                API Key n8n
+                Chave de Acesso
                 {n8nStatus?.api_key_masked && (
                   <span className="ml-2 font-mono text-zinc-600 normal-case">(atual: {n8nStatus.api_key_masked})</span>
                 )}
@@ -159,7 +160,7 @@ export default function Settings() {
                 type="password"
                 value={n8nConfig.api_key}
                 onChange={(e) => setN8nConfig(p => ({ ...p, api_key: e.target.value }))}
-                placeholder="Cole nova API key para atualizar"
+                placeholder="Cole a chave para atualizar"
                 data-testid="n8n-apikey-input"
                 className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
               />
@@ -171,7 +172,7 @@ export default function Settings() {
               className="flex items-center gap-2 px-4 py-2 bg-white text-zinc-950 rounded text-sm font-semibold hover:bg-zinc-100 transition-colors disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
-              {savingN8n ? "Salvando..." : "Salvar configuração n8n"}
+              {savingN8n ? "Salvando..." : "Salvar configuração"}
             </button>
           </form>
         </div>

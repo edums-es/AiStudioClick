@@ -24,7 +24,7 @@ async def run_llm(
         chat = LlmChat(
             api_key=api_key,
             session_id=session_id,
-            system_message=system or "Você é um assistente de IA em um fluxo de automação do AI Studio Click Massa.",
+            system_message=system or "Você é um assistente de IA executando um fluxo de automação no AI Studio.",
         ).with_model("openai", model)
 
         response = await chat.send_message(UserMessage(text=prompt))

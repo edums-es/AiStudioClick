@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     close_db()
 
 
-app = FastAPI(title="AI Studio Click Massa", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="AI Studio", version="1.0.0", lifespan=lifespan)
 
 # Rate limiting
 app.state.limiter = auth_limiter

@@ -125,6 +125,13 @@ N8N_NODE_MAP: Dict[str, Dict] = {
         "typeVersion": 3.4,
         "category": "action",
     },
+    "voice_call": {
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "category": "action",
+        # Stub — conectar a Vapi/Bland.ai na Fase 2
+        # O nó envia requisição HTTP para o provedor de voz configurado
+    },
 }
 
 

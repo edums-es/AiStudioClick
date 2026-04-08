@@ -1,4 +1,4 @@
-"""Seed script — populates initial data for AI Studio Click Massa demo."""
+"""Seed script — populates initial data for AI Studio demo."""
 import logging
 import os
 from datetime import datetime, timezone
@@ -42,14 +42,14 @@ NATIVE_SKILLS = [
         "is_native": True,
     },
     {
-        "name": "Criar Contato no Click Massa", "category": "crm",
-        "description": "Cria um novo contato na base do Click Massa com os dados fornecidos.",
+        "name": "Criar Contato no CRM", "category": "crm",
+        "description": "Cria um novo contato no CRM conectado com os dados fornecidos.",
         "inputs": [
             {"name": "name", "type": "string", "required": True},
             {"name": "phone", "type": "string", "required": True},
             {"name": "email", "type": "string"},
         ],
-        "prompt_base": "Crie um contato com os dados fornecidos no Click Massa.",
+        "prompt_base": "Crie um contato com os dados fornecidos no CRM.",
         "tools_allowed": ["create_contact"],
         "output_schema": {"contact_id": "string", "success": "boolean"},
         "guardrails": ["Valide o formato do telefone antes de criar"],
@@ -273,7 +273,7 @@ async def run_seed(db):
 
 
 async def _seed_admin(db):
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@clickmassa.com")
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@aistudio.com")
     _env_password = os.environ.get("ADMIN_PASSWORD", "")
     is_production = os.environ.get("ENVIRONMENT", "development") == "production"
 
@@ -290,8 +290,8 @@ async def _seed_admin(db):
     if existing is None:
         now = datetime.now(timezone.utc).isoformat()
         tenant_doc = {
-            "name": "Click Massa Demo",
-            "slug": "clickmassa-demo",
+            "name": "AI Studio Demo",
+            "slug": "aistudio-demo",
             "plan": "enterprise",
             "settings": {"timezone": "America/Sao_Paulo", "language": "pt-BR"},
             "created_at": now,
@@ -300,7 +300,7 @@ async def _seed_admin(db):
         tenant_id = str(tenant_result.inserted_id)
 
         user_doc = {
-            "name": "Admin Click Massa",
+            "name": "Admin AI Studio",
             "email": admin_email,
             "password_hash": hash_password(admin_password),
             "role": "admin",
@@ -412,10 +412,10 @@ async def _seed_demo_data(db, tenant_id: str):
         ]
         await db.execution_logs.insert_many(logs)
 
-    # Click Massa integration
+    # CRM integration (Clickmassa)
     await db.integrations.insert_one({
         "provider": "clickmassa",
-        "name": "Click Massa Principal",
+        "name": "CRM Principal",
         "credentials": {},
         "config": {"workspace": "demo"},
         "status": "connected",
@@ -428,7 +428,7 @@ async def _seed_demo_data(db, tenant_id: str):
 
 def _write_test_credentials(admin_email: str, admin_password: str):
     os.makedirs("/app/memory", exist_ok=True)
-    content = f"""# Test Credentials — AI Studio Click Massa
+    content = f"""# Test Credentials — AI Studio
 
 ## Admin Account
 - Email: {admin_email}

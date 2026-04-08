@@ -9,7 +9,7 @@ const STATUS_MAP = {
   error:        { icon: XCircle,     label: "Erro",         cls: "text-red-400" },
 };
 
-const EMPTY_FORM = { provider: "clickmassa", name: "Click Massa Principal", credentials: {}, config: {} };
+const EMPTY_FORM = { provider: "clickmassa", name: "CRM Clickmassa", credentials: {}, config: {} };
 
 export default function Integrations() {
   const [integrations, setIntegrations] = useState([]);
@@ -101,7 +101,7 @@ export default function Integrations() {
             <Plug className="w-6 h-6 text-zinc-600" />
           </div>
           <h3 className="text-white font-medium mb-1">Nenhuma integração configurada</h3>
-          <p className="text-sm text-zinc-500 mb-4">Conecte o Click Massa e outras ferramentas</p>
+          <p className="text-sm text-zinc-500 mb-4">Conecte suas ferramentas e serviços externos</p>
         </div>
       ) : (
         <div className="space-y-3 stagger-children">
@@ -175,10 +175,10 @@ export default function Integrations() {
                 <label className={labelCls}>Provedor</label>
                 <select value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value, credentials: {} })}
                   className={inputCls}>
-                  <option value="clickmassa">Click Massa</option>
-                  <option value="webhook">Webhook</option>
-                  <option value="rest">REST API</option>
-                  <option value="voice">Voice Provider</option>
+                  <option value="clickmassa">CRM Clickmassa</option>
+                  <option value="webhook">Webhook Genérico</option>
+                  <option value="rest_api">REST API</option>
+                  <option value="voice">Provedor de Voz</option>
                 </select>
               </div>
               <div>
@@ -191,7 +191,7 @@ export default function Integrations() {
               {/* Clickmassa-specific credentials */}
               {form.provider === "clickmassa" && (
                 <div className="space-y-3 pt-1 border-t border-zinc-800">
-                  <p className="text-xs text-zinc-500 pt-1">Credenciais do Clickmassa (opcional — deixe em branco para usar no modo demo)</p>
+                  <p className="text-xs text-zinc-500 pt-1">Credenciais da integração (opcional — deixe em branco para usar no modo demo)</p>
                   <div>
                     <label className={labelCls}>URL do Servidor</label>
                     <input placeholder="https://enterprise-40api.seudominio.com.br"

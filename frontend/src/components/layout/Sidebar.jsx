@@ -41,7 +41,7 @@ export default function Sidebar() {
         {!collapsed && (
           <div className="min-w-0">
             <p className="text-sm font-bold text-white tracking-tight truncate">AI Studio</p>
-            <p className="text-xs text-zinc-500 truncate">Click Massa</p>
+            <p className="text-xs text-zinc-500 truncate">AI Studio</p>
           </div>
         )}
       </div>

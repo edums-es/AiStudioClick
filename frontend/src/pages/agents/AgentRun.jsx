@@ -74,7 +74,7 @@ export default function AgentRun() {
     setRunning(false);
   }, []);
 
-  const startExecution = useCallback(() => {
+  const startExecution = useCallback(async () => {
     if (running) return stopExecution();
 
     // Reset state
@@ -84,8 +84,18 @@ export default function AgentRun() {
     setExecutionDone(false);
     setRunning(true);
 
-    // Browser automatically sends httpOnly cookies on same-origin WebSocket — no token needed in URL
-    const wsUrl = `${BACKEND_WS}/api/workspace/ws/run/${id}?input_text=${encodeURIComponent(inputText)}`;
+    // Obter token de curta duração para autenticar WebSocket
+    let wsToken;
+    try {
+      const { data: tokenData } = await api.get("/workspace/ws-token");
+      wsToken = tokenData.ws_token;
+    } catch {
+      toast.error("Não foi possível autenticar. Faça login novamente.");
+      setRunning(false);
+      return;
+    }
+
+    const wsUrl = `${BACKEND_WS}/api/workspace/ws/run/${id}?token=${encodeURIComponent(wsToken)}&input_text=${encodeURIComponent(inputText)}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

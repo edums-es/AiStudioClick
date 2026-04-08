@@ -66,7 +66,7 @@ class OpenAIProvider(AbstractLLMProvider):
         chat = LlmChat(
             api_key=self.api_key,
             session_id=session_id,
-            system_message=system or "Você é um assistente de IA no AI Studio Click Massa.",
+            system_message=system or "Você é um assistente de IA executando um fluxo de automação no AI Studio.",
         ).with_model("openai", self.model)
         response = await chat.send_message(UserMessage(text=prompt))
         return {

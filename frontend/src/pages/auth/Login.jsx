@@ -38,7 +38,7 @@ export default function Login() {
           </div>
           <div>
             <p className="text-sm font-bold text-white tracking-tight" style={{fontFamily: 'Cabinet Grotesk'}}>AI Studio</p>
-            <p className="text-xs text-zinc-500">Click Massa</p>
+            <p className="text-xs text-zinc-500">by AI Studio</p>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@clickmassa.com"
+              placeholder="seu@email.com"
               required
               className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-700 rounded-md text-white text-sm placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-colors"
             />
@@ -102,10 +102,12 @@ export default function Login() {
           </Link>
         </p>
 
-        <div className="mt-8 pt-6 border-t border-zinc-800">
-          <p className="text-xs text-zinc-600 mb-2">Credenciais demo:</p>
-          <p className="text-xs text-zinc-500">admin@clickmassa.com / admin123</p>
-        </div>
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-8 pt-6 border-t border-zinc-800">
+            <p className="text-xs text-zinc-600 mb-2">Conta demo disponível em desenvolvimento</p>
+            <p className="text-xs text-zinc-500">admin@clickmassa.com / admin123</p>
+          </div>
+        )}
       </div>
 
       {/* Right — Image */}
@@ -121,7 +123,7 @@ export default function Login() {
             Transforme estratégia em execução automatizada
           </p>
           <p className="text-zinc-400 text-sm">
-            Construa agentes de IA com builder visual, templates prontos e integração nativa ao Click Massa.
+            Crie, configure e publique agentes de IA sem escrever código.
           </p>
         </div>
       </div>

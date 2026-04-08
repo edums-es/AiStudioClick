@@ -37,7 +37,7 @@ export default function Register() {
           </div>
           <div>
             <p className="text-sm font-bold text-white tracking-tight" style={{fontFamily: 'Cabinet Grotesk'}}>AI Studio</p>
-            <p className="text-xs text-zinc-500">Click Massa</p>
+            <p className="text-xs text-zinc-500">by AI Studio</p>
           </div>
         </div>
 
@@ -129,7 +129,7 @@ export default function Register() {
             Seu workspace de agentes de IA
           </p>
           <p className="text-zinc-400 text-sm">
-            Multi-tenant, visual builder, templates prontos e integração nativa ao Click Massa.
+            Seu workspace privado de agentes de IA. Pronto em segundos.
           </p>
         </div>
       </div>
