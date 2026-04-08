@@ -3,12 +3,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Bot, FileText, Zap, Plug, Map, Activity,
-  Settings, ChevronLeft, ChevronRight, LogOut, Building2
+  Settings, ChevronLeft, ChevronRight, LogOut, Building2,
+  Store, Sparkles,
 } from "lucide-react";
 
 const nav = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/agents", icon: Bot, label: "Agentes" },
+  { to: "/marketplace", icon: Store, label: "Marketplace" },
   { to: "/templates", icon: FileText, label: "Templates" },
   { to: "/skills", icon: Zap, label: "Skills" },
   { to: "/integrations", icon: Plug, label: "Integrações" },
@@ -48,6 +50,38 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto" data-testid="sidebar-nav">
+        {/* Criar com IA CTA */}
+        {!collapsed && (
+          <NavLink
+            to="/create"
+            data-testid="sidebar-create-ai-btn"
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-semibold mb-2 transition-colors duration-150 ${
+                isActive
+                  ? "bg-violet-700 text-white"
+                  : "bg-violet-950/60 text-violet-300 border border-violet-800/50 hover:bg-violet-900/60 hover:text-violet-200"
+              }`
+            }
+          >
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>Criar com IA</span>
+          </NavLink>
+        )}
+        {collapsed && (
+          <NavLink
+            to="/create"
+            data-testid="sidebar-create-ai-btn-collapsed"
+            title="Criar com IA"
+            className={({ isActive }) =>
+              `flex items-center justify-center px-3 py-2.5 rounded-md text-sm mb-2 transition-colors ${
+                isActive ? "bg-violet-700 text-white" : "text-violet-400 hover:bg-violet-950/50"
+              }`
+            }
+          >
+            <Sparkles className="w-4 h-4 shrink-0" />
+          </NavLink>
+        )}
+
         {nav.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}

@@ -10,12 +10,14 @@ import Dashboard from "@/pages/dashboard/Dashboard";
 import AgentsList from "@/pages/agents/AgentsList";
 import AgentBuilder from "@/pages/agents/AgentBuilder";
 import AgentRun from "@/pages/agents/AgentRun";
+import CreateAgent from "@/pages/agents/CreateAgent";
 import Templates from "@/pages/templates/Templates";
 import Skills from "@/pages/skills/Skills";
 import Integrations from "@/pages/integrations/Integrations";
 import MindMap from "@/pages/mindmap/MindMap";
 import Executions from "@/pages/executions/Executions";
 import Settings from "@/pages/settings/Settings";
+import Marketplace from "@/pages/marketplace/Marketplace";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -53,9 +55,11 @@ function App() {
             <Route path="agents/new" element={<AgentBuilder />} />
             <Route path="agents/:id/edit" element={<AgentBuilder />} />
             <Route path="agents/:id/run" element={<AgentRun />} />
+            <Route path="create" element={<CreateAgent />} />
             <Route path="templates" element={<Templates />} />
             <Route path="skills" element={<Skills />} />
             <Route path="integrations" element={<Integrations />} />
+            <Route path="marketplace" element={<Marketplace />} />
             <Route path="mindmap" element={<MindMap />} />
             <Route path="executions" element={<Executions />} />
             <Route path="settings" element={<Settings />} />

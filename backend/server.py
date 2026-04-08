@@ -11,7 +11,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from core.database import init_db, close_db
-from routers import auth, agents, templates, skills, integrations, executions, mindmap, dashboard, n8n as n8n_router, workspace, webhook
+from routers import auth, agents, templates, skills, integrations, executions, mindmap, dashboard, n8n as n8n_router, workspace, webhook, generate
 from routers.auth import limiter as auth_limiter
 from seeds.seed import run_seed
 
@@ -62,5 +62,6 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboar
 api_router.include_router(n8n_router.router, prefix="/n8n", tags=["n8n"])
 api_router.include_router(workspace.router, prefix="/workspace", tags=["workspace"])
 api_router.include_router(webhook.router, prefix="/webhook", tags=["webhook"])
+api_router.include_router(generate.router, tags=["generate"])
 
 app.include_router(api_router)

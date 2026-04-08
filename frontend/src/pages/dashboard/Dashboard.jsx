@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
-import { Bot, FileText, Zap, Plug, Activity, Plus, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Bot, FileText, Zap, Plug, Activity, Plus, CheckCircle, Clock, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
 
 const StatusBadge = ({ status }) => {
   const map = {
@@ -57,14 +57,46 @@ export default function Dashboard() {
           </h1>
           <p className="text-sm text-zinc-400 mt-0.5">Visão geral do seu workspace</p>
         </div>
-        <Link
-          to="/agents/new"
-          data-testid="dashboard-create-agent-btn"
-          className="flex items-center gap-2 px-4 py-2 bg-white text-zinc-950 rounded-md text-sm font-semibold hover:bg-zinc-100 transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Novo Agente
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/agents/new"
+            data-testid="dashboard-create-agent-btn"
+            className="flex items-center gap-2 px-4 py-2 border border-zinc-700 text-zinc-300 rounded-md text-sm font-medium hover:border-zinc-500 hover:text-white transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Novo Agente
+          </Link>
+          <Link
+            to="/create"
+            data-testid="dashboard-create-ai-btn"
+            className="flex items-center gap-2 px-4 py-2 bg-white text-zinc-950 rounded-md text-sm font-semibold hover:bg-zinc-100 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" /> Criar com IA
+          </Link>
+        </div>
       </div>
+
+      {/* Hero CTA — shown when 0 agents */}
+      {!loading && stats?.agents_count === 0 && (
+        <Link
+          to="/create"
+          data-testid="dashboard-hero-cta"
+          className="block mb-8 p-6 bg-gradient-to-br from-violet-950/40 to-zinc-900 border border-violet-800/40 rounded-xl hover:border-violet-700/60 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-violet-400" />
+                <span className="text-sm font-semibold text-violet-300">Comece agora</span>
+              </div>
+              <h2 className="text-lg font-bold text-white mb-1">Crie seu primeiro agente com IA</h2>
+              <p className="text-sm text-zinc-400">
+                Descreva o que você quer em português. A IA monta o workflow automaticamente.
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-zinc-400 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0 ml-4" />
+          </div>
+        </Link>
+      )}
 
       {/* Stats */}
       {loading ? (
