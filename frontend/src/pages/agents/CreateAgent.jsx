@@ -112,7 +112,7 @@ function FlowCanvas({ nodes, edges }) {
       elementsSelectable={false}
       panOnDrag
       zoomOnScroll
-      className="bg-zinc-950"
+      className="bg-zinc-950 w-full h-full"
     >
       <Background color="#27272a" gap={20} size={1} />
       <MiniMap
@@ -322,7 +322,7 @@ export default function CreateAgent() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
 
         {/* ── STEP 1: Prompt ─────────────────────────────────────── */}
         {step === 1 && (
@@ -400,7 +400,7 @@ export default function CreateAgent() {
 
         {/* ── STEP 2: Visual Preview ──────────────────────────────── */}
         {step === 2 && generatedData && (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
             {/* Summary bar */}
             <div className="px-6 py-3 bg-zinc-900/80 border-b border-zinc-800 shrink-0">
               <div className="flex items-start justify-between gap-4">
@@ -439,7 +439,7 @@ export default function CreateAgent() {
             </div>
 
             {/* React Flow Canvas */}
-            <div className="flex-1 relative" data-testid="create-agent-flow-canvas">
+            <div className="flex-1 relative min-h-0" style={{minHeight: "400px"}} data-testid="create-agent-flow-canvas">
               <ReactFlowProvider>
                 <FlowCanvas nodes={animatedNodes} edges={animatedEdges} />
               </ReactFlowProvider>
